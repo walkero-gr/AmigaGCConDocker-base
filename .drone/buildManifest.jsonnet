@@ -10,8 +10,8 @@ local buildManifest(_os='os4', _gcc=11) =
 				"pull": 'always',
 				"image": 'plugins/manifest',
 				"settings": {
-					"target": 'walkero/amigagccondocker:' + _name + '-VERSION_TAG',
-					"template": 'walkero/amigagccondocker:' + _name + '-ARCH' + '-VERSION_TAG',
+					"target": 'walkero/amigagccondocker:' + _name + '-' + ${DRONE_TAG},
+					"template": 'walkero/amigagccondocker:' + _name + '-ARCH-' + ${DRONE_TAG},
 					"platforms": [
 						'linux/amd64',
 						'linux/arm64'
