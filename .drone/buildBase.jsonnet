@@ -1,5 +1,5 @@
 local buildBase(_arch='amd64', _os='os4', _gcc=11) = 
-	local _name = _os + '-gcc' + _gcc + '-base-' + VERSION_TAG + '-' + _arch;
+	local _name = _os + '-gcc' + _gcc + '-base-' + 'VERSION_TAG' + '-' + _arch;
 	{
 		"kind": 'pipeline',
 		"type": 'docker',

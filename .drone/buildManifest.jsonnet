@@ -1,5 +1,5 @@
 local buildManifest(_os='os4', _gcc=11) = 
-	local _name = _os + '-' + 'gcc' + _gcc + '-base-' + VERSION_TAG;
+	local _name = _os + '-' + 'gcc' + _gcc + '-base-' + 'VERSION_TAG';
 	{
 		"kind": 'pipeline',
 		"type": 'docker',
