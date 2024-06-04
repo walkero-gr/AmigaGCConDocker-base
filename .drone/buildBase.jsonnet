@@ -17,7 +17,7 @@ local buildBase(_arch='amd64', _os='os4', _gcc=11) =
 					"repo": 'walkero/amigagccondocker',
 					"tags": [
 						_name,
-						_name + '-' + ${DRONE_TAG}
+						_name + '-' + DRONE_TAG
 					],
 					"cache_from": [
 						'walkero/amigagccondocker:' + _name
