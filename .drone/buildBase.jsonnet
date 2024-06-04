@@ -1,5 +1,5 @@
 local buildBase(_arch='amd64', _os='os4', _gcc=11) = 
-	local _name = _os + '-gcc' + _gcc + '-base-' + 'VERSION_TAG' + '-' + _arch;
+	local _name = _os + '-gcc' + _gcc + '-base-' + _arch;
 	{
 		"kind": 'pipeline',
 		"type": 'docker',
@@ -16,13 +16,13 @@ local buildBase(_arch='amd64', _os='os4', _gcc=11) =
 				"settings": {
 					"repo": 'walkero/amigagccondocker',
 					"tags": [
-						_name
+						_name + '-VERSION_TAG'
 					],
 					"cache_from": [
 						'walkero/amigagccondocker:' + _name
 					],
-					"dockerfile": 'base/os4/exp.Dockerfile',
-					"context": 'base/os4',
+					"dockerfile": 'os4/exp.Dockerfile',
+					"context": 'os4',
 					"purge": true,
 					"compress": true,
 					"build_args": [

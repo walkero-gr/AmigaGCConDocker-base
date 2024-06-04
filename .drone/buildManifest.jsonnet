@@ -1,5 +1,5 @@
 local buildManifest(_os='os4', _gcc=11) = 
-	local _name = _os + '-' + 'gcc' + _gcc + '-base-' + 'VERSION_TAG';
+	local _name = _os + '-' + 'gcc' + _gcc + '-base';
 	{
 		"kind": 'pipeline',
 		"type": 'docker',
@@ -10,8 +10,8 @@ local buildManifest(_os='os4', _gcc=11) =
 				"pull": 'always',
 				"image": 'plugins/manifest',
 				"settings": {
-					"target": 'walkero/amigagccondocker:' + _name,
-					"template": 'walkero/amigagccondocker:' + _name + '-ARCH',
+					"target": 'walkero/amigagccondocker:' + _name + '-VERSION_TAG',
+					"template": 'walkero/amigagccondocker:' + _name + '-ARCH' + '-VERSION_TAG',
 					"platforms": [
 						'linux/amd64',
 						'linux/arm64'
