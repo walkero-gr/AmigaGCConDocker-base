@@ -16,12 +16,13 @@ local buildBase(_arch='amd64', _os='os4', _gcc=11) =
 				"settings": {
 					"repo": 'walkero/amigagccondocker',
 					"tags": [
+						_name,
 						_name + '-VERSION_TAG'
 					],
 					"cache_from": [
 						'walkero/amigagccondocker:' + _name
 					],
-					"dockerfile": 'os4/exp.Dockerfile',
+					"dockerfile": 'os4/Dockerfile',
 					"context": 'os4',
 					"purge": true,
 					"compress": true,
