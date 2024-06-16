@@ -26,5 +26,5 @@ when:
   - branch: main
     event: [push, tag]
 
-depends-on:
-  - awspoweron
+depends_on:
+  - aws-poweron
