@@ -27,4 +27,4 @@ when:
     event: [push, tag]
 
 depends-on:
-  - aws-poweron
+  - awspoweron
