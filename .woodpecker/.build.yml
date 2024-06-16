@@ -21,8 +21,10 @@ steps:
           from_secret: DOCKERHUB_USERNAME
         password:
           from_secret: DOCKERHUB_PASSWORD
-    when:
-      - branch: main
-        event: [push, tag]
-    depends-on:
-      - aws-poweron
+
+when:
+  - branch: main
+    event: [push, tag]
+
+depends-on:
+  - aws-poweron
