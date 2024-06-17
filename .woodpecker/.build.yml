@@ -1,6 +1,5 @@
 labels:
   role: awsbuilder
-  type: aws
 
 steps:
   - name: build-os4-gcc11-base
