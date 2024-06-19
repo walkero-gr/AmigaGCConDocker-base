@@ -12,7 +12,7 @@ steps:
       context: os4
       compress: true
       purge: true
-      dry-run: true
+      # dry-run: true
       build_args:
         - GCC_VER=11
       tags:
