@@ -45,11 +45,11 @@ ENV PACKAGES="autoconf \
     wget \
     xz-utils"
 
-# RUN apt-get update && \
-#     apt-get -y --no-install-recommends install ${PACKAGES}; \
-#     ln -s /usr/bin/g++-10 /usr/bin/g++; \
-#     rm /usr/bin/gcc; \
-#     ln -s /usr/bin/gcc-10 /usr/bin/gcc;
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install ${PACKAGES}; \
+    ln -s /usr/bin/g++-10 /usr/bin/g++; \
+    rm /usr/bin/gcc; \
+    ln -s /usr/bin/gcc-10 /usr/bin/gcc;
 
 # # Copy necessary repos from git-clone
 # COPY --from=git-clone /repos/adtools /opt/adtools
