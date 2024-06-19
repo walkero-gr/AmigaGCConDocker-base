@@ -9,4 +9,4 @@ git submodule init && \
 
 # Compile gcc
 echo "-------- START GCC COMPILATION"
-# make -C native-build gcc-cross CROSS_PREFIX=/opt/ppc-amigaos -j$(nproc)
+make -C native-build gcc-cross CROSS_PREFIX=/opt/ppc-amigaos -j$(nproc)
