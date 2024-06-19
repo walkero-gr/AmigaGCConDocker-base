@@ -7,6 +7,8 @@ RUN mkdir /repos; \
     git clone https://github.com/coreutils/coreutils    /repos/coreutils; \
     git clone https://github.com/coreutils/gnulib       /repos/gnulib
 
+
+##############################################################################
 # The ubuntu:latest tag points to the "latest LTS", since that's the version recommended for general use.
 FROM ubuntu:mantic AS builder
 
