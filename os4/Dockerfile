@@ -57,10 +57,9 @@ COPY --from=git-clone /repos/binutils-gdb /opt/adtools/binutils/repo
 COPY --from=git-clone /repos/coreutils /opt/adtools/coreutils/repo
 COPY --from=git-clone /repos/gnulib /opt/adtools/gnulib/repo
 COPY misc /opt/misc
+COPY scripts/compile-adtools.sh /compile-adtools.sh
 
 WORKDIR /opt/adtools
-
-COPY scripts/compile-adtools.sh /compile-adtools.sh
 RUN chmod +x /compile-adtools.sh && bash /compile-adtools.sh
 
 
