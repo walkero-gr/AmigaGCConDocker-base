@@ -14,8 +14,7 @@ steps:
       purge: true
       dry-run: true
       build_args:
-        - OS: os4
-        - GCC_VER: 11
+        - GCC_VER=11
       tags:
         - os4-gcc11-base-testing
       username:
