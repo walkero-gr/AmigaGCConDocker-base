@@ -1,7 +1,6 @@
 labels:
   role: generic
 
-
 steps:
   - name: aws-poweron
     image: amazon/aws-cli
