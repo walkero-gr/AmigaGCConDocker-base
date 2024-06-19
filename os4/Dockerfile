@@ -1,11 +1,11 @@
 
-FROM alpine/git:2.40.1 AS git-clone
+# FROM alpine/git:2.40.1 AS git-clone
 
-RUN mkdir /repos; \
-    git clone https://github.com/AmigaLabs/adtools.git  /repos/adtools --depth 1; \
-    git clone https://github.com/bminor/binutils-gdb    /repos/binutils-gdb; \
-    git clone https://github.com/coreutils/coreutils    /repos/coreutils; \
-    git clone https://github.com/coreutils/gnulib       /repos/gnulib
+# RUN mkdir /repos; \
+#     git clone https://github.com/AmigaLabs/adtools.git  /repos/adtools --depth 1; \
+#     git clone https://github.com/bminor/binutils-gdb    /repos/binutils-gdb; \
+#     git clone https://github.com/coreutils/coreutils    /repos/coreutils; \
+#     git clone https://github.com/coreutils/gnulib       /repos/gnulib
 
 # The ubuntu:latest tag points to the "latest LTS", since that's the version recommended for general use.
 FROM ubuntu:mantic AS builder
@@ -45,17 +45,17 @@ ENV PACKAGES="autoconf \
     wget \
     xz-utils"
 
-RUN apt-get update && \
-    apt-get -y --no-install-recommends install ${PACKAGES}; \
-    ln -s /usr/bin/g++-10 /usr/bin/g++; \
-    rm /usr/bin/gcc; \
-    ln -s /usr/bin/gcc-10 /usr/bin/gcc;
+# RUN apt-get update && \
+#     apt-get -y --no-install-recommends install ${PACKAGES}; \
+#     ln -s /usr/bin/g++-10 /usr/bin/g++; \
+#     rm /usr/bin/gcc; \
+#     ln -s /usr/bin/gcc-10 /usr/bin/gcc;
 
-# Copy necessary repos from git-clone
-COPY --from=git-clone /repos/adtools /opt/adtools
-COPY --from=git-clone /repos/binutils-gdb /opt/adtools/binutils/repo
-COPY --from=git-clone /repos/coreutils /opt/adtools/coreutils/repo
-COPY --from=git-clone /repos/gnulib /opt/adtools/gnulib/repo
+# # Copy necessary repos from git-clone
+# COPY --from=git-clone /repos/adtools /opt/adtools
+# COPY --from=git-clone /repos/binutils-gdb /opt/adtools/binutils/repo
+# COPY --from=git-clone /repos/coreutils /opt/adtools/coreutils/repo
+# COPY --from=git-clone /repos/gnulib /opt/adtools/gnulib/repo
 COPY misc /opt/misc
 
 WORKDIR /opt/adtools
@@ -66,7 +66,7 @@ RUN chmod +x /compile-adtools.sh && bash /compile-adtools.sh
 
 ##############################################################################
 # Final Base environment image
-FROM ubuntu:latest
-LABEL maintainer="Georgios Sokianos <walkero@gmail.com>"
+# FROM ubuntu:latest
+# LABEL maintainer="Georgios Sokianos <walkero@gmail.com>"
 
-COPY --from=builder /opt/ppc-amigaos /opt/ppc-amigaos
+# COPY --from=builder /opt/ppc-amigaos /opt/ppc-amigaos
