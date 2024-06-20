@@ -4,7 +4,7 @@ labels:
 
 steps:
   - name: build-os4-gcc11-base
-    image: drone/docker
+    image: plugins/docker
     settings:
       repo: walkero/amigagccondocker
       # registry: https://index.docker.io/v1/
