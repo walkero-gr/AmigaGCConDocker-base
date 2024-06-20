@@ -1,11 +1,11 @@
 labels:
   role: awsbuilder
+  platform: linux/amd64
 
 steps:
   - name: build-os4-gcc11-base
-    image: woodpeckerci/plugin-docker-buildx
+    image: drone/docker
     settings:
-      platforms: linux/amd64,linux/arm64/v8
       repo: walkero/amigagccondocker
       # registry: https://index.docker.io/v1/
       dockerfile: os4/Dockerfile
