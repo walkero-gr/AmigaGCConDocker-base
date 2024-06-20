@@ -5,12 +5,11 @@ steps:
   - name: build-manifest
     image: plugins/manifest
     settings:
-      target: "walkero/amigagccondocker:οs4-gcc11-base-",
-      template: "walkero/amigagccondocker:οs4-gcc11-base-ARCH-",
-      platforms: [
-        'linux/amd64',
-        'linux/arm64'
-      ],
+      target: "walkero/amigagccondocker:οs4-gcc11-base-${CI_COMMIT_TAG}"
+      template: "walkero/amigagccondocker:οs4-gcc11-base-ARCH-${CI_COMMIT_TAG}"
+      platforms:
+        - "linux/amd64"
+        - "linux/arm64"
       username:
         from_secret: DOCKERHUB_USERNAME
       password:
