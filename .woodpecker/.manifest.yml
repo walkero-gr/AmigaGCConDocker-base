@@ -5,8 +5,8 @@ steps:
   - name: build-manifest
     image: plugins/manifest
     settings:
-      target: walkero/amigagccondocker:οs4-gcc11-base-${CI_COMMIT_TAG},
-      template: walkero/amigagccondocker:οs4-gcc11-base-ARCH-${CI_COMMIT_TAG},
+      target: "walkero/amigagccondocker:οs4-gcc11-base-${CI_COMMIT_TAG}",
+      template: "walkero/amigagccondocker:οs4-gcc11-base-ARCH-${CI_COMMIT_TAG}",
       platforms: [
         'linux/amd64',
         'linux/arm64'
