@@ -13,6 +13,8 @@ steps:
       compress: true
       purge: true
       # dry-run: true
+      cache_from:
+        - walkero/amigagccondocker:os4-gcc11-base-arm64
       build_args:
         - GCC_VER=11
       tags:
