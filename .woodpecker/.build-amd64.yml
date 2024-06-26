@@ -18,8 +18,8 @@ steps:
       build_args:
         - GCC_VER=11
       tags:
-        - os4-gcc11-base-amd64
-        - os4-gcc11-base-${CI_COMMIT_TAG}-amd64
+        - os4-gcc11-base-tst-amd64
+        - os4-gcc11-base-tst-${CI_COMMIT_TAG}-amd64
       username:
         from_secret: DOCKERHUB_USERNAME
       password:
