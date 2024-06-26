@@ -18,8 +18,8 @@ steps:
       build_args:
         - GCC_VER=11
       tags:
-        - os4-gcc11-base-tst-arm64
-        - os4-gcc11-base-tst-${CI_COMMIT_TAG}-arm64
+        - os4-gcc11-base-arm64
+        - os4-gcc11-base-${CI_COMMIT_TAG}-arm64
       username:
         from_secret: DOCKERHUB_USERNAME
       password:

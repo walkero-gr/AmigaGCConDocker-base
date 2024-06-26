@@ -1,11 +1,11 @@
 
-# FROM alpine/git:2.40.1 AS git-clone
+FROM alpine/git:2.40.1 AS git-clone
 
-# RUN mkdir /repos; \
-#     git clone https://github.com/AmigaLabs/adtools.git  /repos/adtools --depth 1; \
-#     git clone https://github.com/bminor/binutils-gdb    /repos/binutils-gdb; \
-#     git clone https://github.com/coreutils/coreutils    /repos/coreutils; \
-#     git clone https://github.com/coreutils/gnulib       /repos/gnulib
+RUN mkdir /repos; \
+    git clone https://github.com/AmigaLabs/adtools.git  /repos/adtools --depth 1; \
+    git clone https://github.com/bminor/binutils-gdb    /repos/binutils-gdb; \
+    git clone https://github.com/coreutils/coreutils    /repos/coreutils; \
+    git clone https://github.com/coreutils/gnulib       /repos/gnulib
 
 
 ##############################################################################
@@ -17,57 +17,57 @@ ARG GCC_VER
 
 ENV GCC_VER=${GCC_VER}
 
-# COPY --from=walkero/lha-on-docker /usr/bin/lha /usr/bin/lha
+COPY --from=walkero/lha-on-docker /usr/bin/lha /usr/bin/lha
 
-# ENV PACKAGES="autoconf \
-#     automake \
-#     autopoint \
-#     bison \
-#     ca-certificates \
-#     curl \
-#     dh-autoreconf \
-#     flex \
-#     g++-10 \
-#     gettext \
-#     git \
-#     gperf \
-#     gpg \
-#     libfl2 \
-#     libgmp-dev \
-#     libmpc3 \
-#     libmpc-dev \
-#     libtool \
-#     make \
-#     mc \
-#     nano \
-#     patch \
-#     python3 \
-#     rsync \
-#     texinfo \
-#     wget \
-#     xz-utils"
+ENV PACKAGES="autoconf \
+    automake \
+    autopoint \
+    bison \
+    ca-certificates \
+    curl \
+    dh-autoreconf \
+    flex \
+    g++-10 \
+    gettext \
+    git \
+    gperf \
+    gpg \
+    libfl2 \
+    libgmp-dev \
+    libmpc3 \
+    libmpc-dev \
+    libtool \
+    make \
+    mc \
+    nano \
+    patch \
+    python3 \
+    rsync \
+    texinfo \
+    wget \
+    xz-utils"
 
-# RUN apt-get update && \
-#     apt-get -y --no-install-recommends install ${PACKAGES}; \
-#     ln -s /usr/bin/g++-10 /usr/bin/g++; \
-#     rm /usr/bin/gcc; \
-#     ln -s /usr/bin/gcc-10 /usr/bin/gcc;
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install ${PACKAGES}; \
+    ln -s /usr/bin/g++-10 /usr/bin/g++; \
+    rm /usr/bin/gcc; \
+    ln -s /usr/bin/gcc-10 /usr/bin/gcc;
 
 # Copy necessary repos from git-clone
-# COPY --from=git-clone /repos/adtools /opt/adtools
-# COPY --from=git-clone /repos/binutils-gdb /opt/adtools/binutils/repo
-# COPY --from=git-clone /repos/coreutils /opt/adtools/coreutils/repo
-# COPY --from=git-clone /repos/gnulib /opt/adtools/gnulib/repo
-# COPY misc /opt/misc
-# COPY scripts/compile-adtools.sh /compile-adtools.sh
+COPY --from=git-clone /repos/adtools /opt/adtools
+COPY --from=git-clone /repos/binutils-gdb /opt/adtools/binutils/repo
+COPY --from=git-clone /repos/coreutils /opt/adtools/coreutils/repo
+COPY --from=git-clone /repos/gnulib /opt/adtools/gnulib/repo
+COPY misc /opt/misc
+COPY scripts/compile-adtools.sh /compile-adtools.sh
 
-# WORKDIR /opt/adtools
-# RUN chmod +x /compile-adtools.sh && bash /compile-adtools.sh
+WORKDIR /opt/adtools
+RUN chmod +x /compile-adtools.sh && bash /compile-adtools.sh
 
 
 ##############################################################################
 # Final Base environment image
-# FROM ubuntu:latest
-# LABEL maintainer="Georgios Sokianos <walkero@gmail.com>"
+FROM ubuntu:latest
+LABEL maintainer="Georgios Sokianos <walkero@gmail.com>"
 
-# COPY --from=builder /opt/ppc-amigaos /opt/ppc-amigaos
+COPY --from=builder /opt/ppc-amigaos /opt/ppc-amigaos
