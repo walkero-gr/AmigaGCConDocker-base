@@ -1,5 +1,5 @@
 
-FROM alpine/git:2.40.1 AS git-clone
+FROM alpine/git:2.45.2 AS git-clone
 
 RUN mkdir /repos; \
     git clone https://github.com/AmigaLabs/adtools.git  /repos/adtools --depth 1; \
@@ -10,7 +10,7 @@ RUN mkdir /repos; \
 
 ##############################################################################
 # The ubuntu:latest tag points to the "latest LTS", since that's the version recommended for general use.
-FROM ubuntu:mantic AS builder
+FROM ubuntu:22.04 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GCC_VER
@@ -19,7 +19,8 @@ ENV GCC_VER=${GCC_VER}
 
 COPY --from=walkero/lha-on-docker /usr/bin/lha /usr/bin/lha
 
-ENV PACKAGES="autoconf \
+ENV PACKAGES="\
+    autoconf \
     automake \
     autopoint \
     bison \
@@ -27,7 +28,7 @@ ENV PACKAGES="autoconf \
     curl \
     dh-autoreconf \
     flex \
-    g++-10 \
+    g++ \
     gettext \
     git \
     gperf \
@@ -48,10 +49,7 @@ ENV PACKAGES="autoconf \
     xz-utils"
 
 RUN apt-get update && \
-    apt-get -y --no-install-recommends install ${PACKAGES}; \
-    ln -s /usr/bin/g++-10 /usr/bin/g++; \
-    rm /usr/bin/gcc; \
-    ln -s /usr/bin/gcc-10 /usr/bin/gcc;
+    apt-get -y --no-install-recommends install ${PACKAGES};
 
 # Copy necessary repos from git-clone
 COPY --from=git-clone /repos/adtools /opt/adtools

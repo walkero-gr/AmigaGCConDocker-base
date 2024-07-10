@@ -2,7 +2,21 @@ labels:
   role: generic
 
 steps:
-  - name: build-manifest
+  - name: build-latest-manifest
+    image: plugins/manifest
+    environment:
+      PULLREQUEST_DRONE_PULL_REQUEST: 0
+    settings:
+      target: "walkero/amigagccondocker:os4-gcc11-base"
+      template: "walkero/amigagccondocker:os4-gcc11-base-ARCH"
+      platforms:
+        - linux/amd64
+        - linux/arm64
+      username:
+        from_secret: DOCKERHUB_USERNAME
+      password:
+        from_secret: DOCKERHUB_PASSWORD
+  - name: build-versioned-manifest
     image: plugins/manifest
     environment:
       PULLREQUEST_DRONE_PULL_REQUEST: 0

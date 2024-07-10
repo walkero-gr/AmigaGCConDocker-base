@@ -4,3 +4,5 @@ os4/out
 os4/misc/downloads
 *-OBS
 .vscode
+*_bak
+SDK_*.lha

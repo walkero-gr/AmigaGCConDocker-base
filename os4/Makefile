@@ -8,7 +8,7 @@ CLIB2_REPO?=adtools
 CLIB2_SRC?=apt
 # OS4 SDK version
 SDK?=54.16
-REL?=2.0.0
+REL?=1.1.0
 
 REPO=walkero/amigagccondocker
 TAG?=$(OS)-gcc$(GCC)-base-$(REL)
@@ -25,8 +25,7 @@ help:
 	@echo "The available parameters can be seen below:"
 	@echo ""
 	@echo "build            - Build the Docker image"
-# 	@echo "buildnc          - Pull the latest repos' code and build the Docker image"
-# 	@echo "                   without using caching"
+	@echo "buildnc          - Build the Docker image without using caching"
 # 	@echo "build-exp        - Build the experiment Docker image, with gcc11 and clib4"
 # 	@echo "shell            - Create a container with the latest Docker image and get"
 # 	@echo "                   into it"
@@ -46,6 +45,12 @@ help:
 
 build:
 	docker build -f ./Dockerfile \
+		-t $(REPO):$(TAG) \
+		--progress plain \
+		--build-arg GCC_VER=$(GCC) .
+
+buildnc:
+	docker build --no-cache -f ./Dockerfile \
 		-t $(REPO):$(TAG) \
 		--progress plain \
 		--build-arg GCC_VER=$(GCC) .

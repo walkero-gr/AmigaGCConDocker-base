@@ -4,16 +4,34 @@
 # We then build the native compiler using the freshly-built cross
 # compiler.
 #
+# This makefile is heavily changed for the AmigaGCConDocker project
+# https://github.com/walkero-gr/AmigaGCConDocker
+#
 # The user running this script must have write access to /gcc
 #
+# ===
+CROSS_IS_PRESENT?=0
+# Optional (DEFAULT=0):
 # Define CROSS_IS_PRESENT=1 if a suitable cross compiler is already
 # present, in which case the cross compiler build is skipped, e.g.:
 #
 #  make CROSS_IS_PRESENT=1
-# 
-# This makefile is heavily changed for the AmigaGCConDocker project
-# https://github.com/walkero-gr/AmigaGCConDocker
 #
+# ===
+CLIB2_SHA1?=1a42c693e03881f6f969c43ab36ce20d2569751d
+# Optional (DEFAULT 1a42c693e03881f6f969c43ab36ce20d2569751d)
+# Define CLIB2_SHA1 to be the value of the branch or commit to use for clib2
+# ===
+CLIB4_SHA1?=HEAD
+# Optional (DEFAULT HEAD)
+# Define CLIB4_SHA1 to be the value of the branch or commit to use for clib4
+#
+# Note that CLIB4 is only supported for certain version of GCC, see
+# the variable named "CLIB4_SUPPORT" below
+# ===
+SDK_VERSION?=54.16
+# Optional (DEFAULT=54.16):
+# Define SDK_VERSION to specify which version of the Amiga SDK is desired
 
 ROOT_DIR=$(realpath .)
 
@@ -42,10 +60,27 @@ endif
 
 GCC_BRANCH_NAME:=$(word 1, $(subst ., , $(GCC_VERSION)))
 
-# Setup SDK variables and URL
-SDK_VERSION:=54.16
-FILEID=127
-SDK_URL=https://www.hyperion-entertainment.biz/index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=$(FILEID)&amp;Itemid=$(FILEID)
+# Handle SDK version and mapping to necessary file URL
+ifeq (54.16,$(SDK_VERSION))
+SDK_URL_FILE=127
+else
+ifeq (53.34,$(SDK_VERSION))
+SDK_URL_FILE=125
+else
+ifeq (53.30,$(SDK_VERSION))
+SDK_URL_FILE=82
+else
+ifeq (53.24,$(SDK_VERSION))
+SDK_URL_FILE=69
+else
+ifneq (54.16,$(SDK_VERSION))
+$(error Unexpected SDK_VERSION supplied)
+endif
+endif
+endif
+endif
+endif
+SDK_URL=http://www.hyperion-entertainment.biz/index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=$(SDK_URL_FILE)
 
 # Native tools
 COREUTILS_SRC_DIR=../coreutils/repo
@@ -54,29 +89,14 @@ COREUTILS_VERSION=5.2.1
 # Distribution version, used as middle part of a distribution archive
 DIST_VERSION=$(shell date +%Y%m%d)-$(shell git rev-list --count HEAD)
 
-ifeq ($(CLIB2_REPO), afxgroup)
-ifeq ($(CLIB2_SRC), git)
-CLIB2_URL=https://github.com/afxgroup/clib2
-CLIB2_SHA1=beta10
-# CLIB2_SHA1=4ffb456ea162206dbdb0800fa30907a04c5c4453
-endif
+# Set up the necessary variables for the CLIBs
+CLIB4_SUPPORT=$(filter 11 8 6,$(GCC_BRANCH_NAME))
+CLIB4_URL=https://github.com/AmigaLabs/clib4
+CLIB4_DIR=downloads/clib4/
+CLIB4_RELEASE_ARCHIVE_NAME=adtools-os4-clib4-$(DIST_VERSION).lha
 
-ifeq ($(CLIB2_SRC), release)
-CLIB2_URL=https://github.com/afxgroup/clib2/releases/download/v1.0.0-beta-9/clib2.lha
-endif
-
-ifeq ($(CLIB2_SRC), apt)
-CLIB2_PATH=/usr/ppc-amigaos
-endif
-
-CLIB2_DIR=downloads/clib2
-else # adtools
 CLIB2_URL=https://github.com/sodero/clib2
-CLIB2_SHA1=02ecf7d92448b5486502cd9e95fc838dca4804a7
-CLIB2_DIR=downloads/clib2/library
-endif
-# CLIB2_URL=https://github.com/sba1/clib2-1
-# CLIB2_SHA1=b874ff71deb55016a20f87483beb1ecbe226c55e
+CLIB2_DIR=downloads/clib2/library/
 CLIB2_RELEASE_ARCHIVE_NAME=adtools-os4-clib2-$(DIST_VERSION).lha
 
 CROSS_PREFIX?=$(ROOT_DIR)/root-cross
@@ -107,22 +127,25 @@ downloads-prepare:
 # Downloads clib2
 #
 downloads-done-clib2:
-ifeq ($(CLIB2_REPO), afxgroup)
-
-ifeq ($(CLIB2_SRC), git)
-	git clone $(CLIB2_URL) ./downloads/clib2 && \
-		git -C ./downloads/clib2 checkout $(CLIB2_SHA1)
-endif
-
-ifeq ($(CLIB2_SRC), release)
-	wget -q "$(CLIB2_URL)" -O ./downloads/clib2.lha
-endif
-
-else # adtools
-	git clone $(CLIB2_URL) ./downloads/clib2 && \
-		git -C ./downloads/clib2 checkout $(CLIB2_SHA1)
-endif
+	mkdir -p downloads
+	cd downloads && \
+		(git clone $(CLIB2_URL) clib2 || true) && \
+		cd clib2 && \
+		git checkout $(CLIB2_SHA1)
 	touch $@
+
+#
+# Downloads clib4
+#
+ifneq ($(CLIB4_SUPPORT),)
+downloads-done-clib4:
+	mkdir -p downloads
+	cd downloads && \
+		(git clone $(CLIB4_URL) clib4 || true) && \
+		cd clib4 && \
+		git checkout $(CLIB4_SHA1)
+	touch $@
+endif
 
 #
 # Downloads OS4 SDK
@@ -138,7 +161,11 @@ endif
 #
 # Downloads the SDK and libraries necesseary to build the cross compiler
 #
-downloads-done: downloads-prepare downloads-done-clib2 downloads-done-sdk
+DOWNLOADS_DONE_DEPENDENCY=downloads-done-clib2
+ifneq ($(CLIB4_SUPPORT),)
+DOWNLOADS_DONE_DEPENDENCY+=downloads-done-clib4
+endif
+downloads-done: downloads-prepare $(DOWNLOADS_DONE_DEPENDENCY) downloads-done-sdk
 	cd downloads && wget -N $(GNU_SERVER)/gmp/$(GMP_ARCHIVE)
 	cd downloads && wget -N $(GNU_SERVER)/mpfr/$(MPFR_ARCHIVE)
 	cd downloads && wget -N $(GNU_SERVER)/mpc/$(MPC_ARCHIVE)
@@ -169,20 +196,18 @@ binutils-install: binutils-cross-done-$(BINUTILS_VERSION)
 #
 includes-done: downloads-done
 	mkdir -p $(CROSS_PREFIX)/ppc-amigaos/SDK/include
-	lha -xfw=downloads downloads/SDK_$(SDK_VERSION).lha
-
-# TODO: Decide if we need to remove it
-# We built clib2 inplace
-#	cd downloads/SDK_Install && lha xf clib2*.lha
-#	cd downloads/SDK_Install && mv clib2* $(CROSS_PREFIX)/ppc-amigaos/SDK
-
-	lha -xfw=$(CROSS_PREFIX)/ppc-amigaos/SDK downloads/SDK_Install/newlib*.lha
-	lha -xfw=$(CROSS_PREFIX)/ppc-amigaos/SDK downloads/SDK_Install/execsg*.lha
-
-	lha -xfw=downloads/SDK_Install downloads/SDK_Install/base.lha
+	lha -xfw=downloads -q2 downloads/SDK_$(SDK_VERSION).lha
+# lha -xfw=$(CROSS_PREFIX)/ppc-amigaos/SDK -q2 downloads/SDK_Install/newlib*.lha
+	lha -xfw=downloads/SDK_Install -q2 downloads/SDK_Install/newlib*.lha
+	lha -xfw=downloads/SDK_Install -q2 downloads/SDK_Install/base.lha
+ifneq (53.30,$(SDK_VERSION))
+ifneq (53.24,$(SDK_VERSION))
+	lha -xfw=$(CROSS_PREFIX)/ppc-amigaos/SDK -q2 downloads/SDK_Install/execsg*.lha
+endif
+endif
 	rm -rf downloads/SDK_Install/*.lha
+	mv downloads/SDK_Install/newlib* $(CROSS_PREFIX)/ppc-amigaos/SDK
 	mv downloads/SDK_Install/Include/* $(CROSS_PREFIX)/ppc-amigaos/SDK/include
-	
 	cp -r $(CROSS_PREFIX)/ppc-amigaos/SDK/Include/* $(CROSS_PREFIX)/ppc-amigaos/SDK/include
 	rm -rf $(CROSS_PREFIX)/ppc-amigaos/SDK/Include
 
@@ -201,7 +226,10 @@ XGCC_CC=ppc-amigaos-gcc
 XAR=ppc-amigaos-ar -q
 XRANLIB=ppc-amigaos-ranlib
 
-CLIB2_CROSS_DONE_DEPENDENCY=downloads-done-clib2
+CLIB_CROSS_DONE_DEPENDENCY=downloads-done-clib2
+ifneq ($(CLIB4_SUPPORT),)
+CLIB_CROSS_DONE_DEPENDENCY+=downloads-done-clib4
+endif
 
 else
 
@@ -211,7 +239,7 @@ XGCC_CC=$(XGCC) -B $(XGCC_DIR)
 XAR=$(CROSS_PREFIX)/bin/ppc-amigaos-ar -q
 XRANLIB=$(CROSS_PREFIX)/bin/ppc-amigaos-ranlib
 
-CLIB2_CROSS_DONE_DEPENDENCY=xgcc-done-$(GCC_VERSION)
+CLIB_CROSS_DONE_DEPENDENCY=xgcc-done-$(GCC_VERSION)
 
 endif
 
@@ -236,52 +264,48 @@ xgcc-done-$(GCC_VERSION): includes-done binutils-cross-done-$(BINUTILS_VERSION)
 	touch $@
 
 #
-# Build clib2 via xgcc
+# Build clib via xgcc
 #
-clib2-cross-done-$(GCC_VERSION): $(CLIB2_CROSS_DONE_DEPENDENCY)
-ifeq ($(CLIB2_REPO), afxgroup)
-
-ifdef CLIB2_SHA1
-	PATH="$(CROSS_PREFIX)/bin:$(PATH)" $(MAKE) -C $(CLIB2_DIR) -f GNUmakefile.os4 CC="$(XGCC_CC)" AR="$(XAR)" RANLIB="$(XRANLIB)" 
-	
-	mkdir -p $(CLIB2_DIR)/include/ $(CLIB2_DIR)/lib/
-	\cp -Rp $(CLIB2_DIR)/library/include/* $(CLIB2_DIR)/include/ 
-	\cp -Rp $(CLIB2_DIR)/build/lib/* $(CLIB2_DIR)/libs/libauto.a $(CLIB2_DIR)/lib/
-else
-ifeq ($(CLIB2_REPO), afxgroup)
-ifeq ($(CLIB2_SRC), apt)
-	\cp -r $(CLIB2_PATH)/SDK/clib2 downloads/
-	touch downloads/clib2/LICENSE
-else
-	lha xw=downloads downloads/clib2.lha
-endif
-endif
+ifneq ($(CLIB4_SUPPORT),)
+clib4-cross-done-$(GCC_VERSION): $(CLIB_CROSS_DONE_DEPENDENCY)
+# Build clib4 using xgcc that have just been built
+	$(MAKE) -C $(CLIB4_DIR) -f GNUmakefile.os4 \
+		CC="$(XGCC_CC)" \
+		AR="$(XAR)" \
+		RANLIB="$(XRANLIB)" \
+		STRIP=$(STRIP) \
+		INSTALL_PREFIX=$(CROSS_PREFIX)/ppc-amigaos/SDK/clib4 \
+		SDK_INCLUDE=$(CROSS_PREFIX)/ppc-amigaos/SDK/include
+# Copy clib4 libs and includes
+	$(MAKE) -C $(CLIB4_DIR) -f GNUmakefile.os4 install \
+		INSTALL_PREFIX=$(CROSS_PREFIX)/ppc-amigaos/SDK/clib4
+	cp $(CLIB4_DIR)/LICENSE* $(CROSS_PREFIX)/ppc-amigaos/SDK/clib4
+	touch $@
 endif
 
-else
+clib2-cross-done-$(GCC_VERSION): $(CLIB_CROSS_DONE_DEPENDENCY)
 # Build clib2 using xgcc that have just been built
-	$(MAKE) -C $(CLIB2_DIR) -f GNUmakefile.os4 CC="$(XGCC_CC)" AR="$(XAR)" RANLIB="$(XRANLIB)"
-endif
-
+	$(MAKE) -C $(CLIB2_DIR) -f GNUmakefile.os4 \
+		CC="$(XGCC_CC)" \
+		AR="$(XAR)" \
+		RANLIB="$(XRANLIB)"
 # Copy clib2 libs and includes
 	rm -Rf $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/lib $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/include
 	mkdir -p $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/lib
 	mkdir -p $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/include
 	cp -Rp $(CLIB2_DIR)/include/* $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/include
 	cp -Rp $(CLIB2_DIR)/lib/* $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/lib
-
-ifeq ($(CLIB2_REPO), afxgroup)
-	\cp $(CLIB2_DIR)/LICENSE* $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2
-else
 	cp $(CLIB2_DIR)/../LICENSE $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2
-endif
-
 	touch $@
 
 #
 # Build the cross compiler
 #
-gcc-cross-done-$(GCC_VERSION): clib2-cross-done-$(GCC_VERSION)
+GCC_CROSS_DONE_DEPENDENCY=clib2-cross-done-$(GCC_VERSION)
+ifneq ($(CLIB4_SUPPORT),)
+GCC_CROSS_DONE_DEPENDENCY+=clib4-cross-done-$(GCC_VERSION)
+endif
+gcc-cross-done-$(GCC_VERSION): $(GCC_CROSS_DONE_DEPENDENCY)
 # Compile remaining
 	$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION)
 	$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) install
@@ -355,12 +379,12 @@ endif
 	@if [ ! -f $(COREUTILS_SRC_DIR)/configure ]; then echo "Please checkout coreutils first!"; false; fi
 # Pretend few files to be uptodate
 	touch $(realpath $(COREUTILS_SRC_DIR))/configure $(realpath $(COREUTILS_SRC_DIR))/config.hin
-#	cd coreutils-native-build ; PATH="$(CROSS_PREFIX)/bin:$(PATH)" LIBS="-lunix" $(realpath $(COREUTILS_SRC_DIR))/configure --prefix=/gcc --host=ppc-amigaos
-ifeq ($(CLIB2_REPO), afxgroup)
-	cd coreutils-native-build ; PATH="$(CROSS_PREFIX)/bin:$(PATH)" CPPFLAGS="-mcrt=clib2" LDFLAGS="-mcrt=clib2" $(realpath $(COREUTILS_SRC_DIR))/configure --prefix=/gcc --host=ppc-amigaos --disable-maintainer-mode
-else
-	cd coreutils-native-build ; PATH="$(CROSS_PREFIX)/bin:$(PATH)" CPPFLAGS="-mcrt=clib2" LDFLAGS="-mcrt=clib2" LIBS="-lunix -lnet" $(realpath $(COREUTILS_SRC_DIR))/configure --prefix=/gcc --host=ppc-amigaos --disable-maintainer-mode
-endif
+	cd coreutils-native-build ; \
+		$(realpath $(COREUTILS_SRC_DIR))/configure --prefix=/gcc --host=ppc-amigaos --disable-maintainer-mode \
+		PATH="$(CROSS_PREFIX)/bin:$(PATH)" \
+		CPPFLAGS="-mcrt=clib2" \
+		LDFLAGS="-mcrt=clib2" \
+		LIBS="-lunix -lnet"
 	PATH="$(CROSS_PREFIX)/bin:$(PATH)" $(MAKE) -C coreutils-native-build
 	touch $@
 
@@ -400,11 +424,16 @@ doc:
 #
 # Target for generating the ReadMe used for Aminet
 #
+ifneq ($(CLIB4_SUPPORT),)
+CLIB4_ENTRY=CLIB4_RELEASE_ARCHIVE_NAME='$(CLIB4_RELEASE_ARCHIVE_NAME)'
+else
+CLIB4_ENTRY=CLIB4_RELEASE_ARCHIVE_NAME='<NOT GENERATED>'
+endif
 ReadMe: ReadMe.mak
 	python -c "\
 	from mako.template import Template;\
 	from mako.lookup import TemplateLookup;\
-	print Template(\
+	print (Template(\
 		filename='$<',\
 		input_encoding='utf-8',\
 		output_encoding='utf-8',\
@@ -415,8 +444,9 @@ ReadMe: ReadMe.mak
 			GCC_VERSION='$(GCC_VERSION)',\
 			GCC_DEV_PHASE='$(GCC_DEV_PHASE)',\
 			COREUTILS_VERSION='$(COREUTILS_VERSION)',\
-			CLIB2_RELEASE_ARCHIVE_NAME='$(CLIB2_RELEASE_ARCHIVE_NAME)'\
-		)\
+			CLIB2_RELEASE_ARCHIVE_NAME='$(CLIB2_RELEASE_ARCHIVE_NAME)',\
+			$(CLIB4_ENTRY)\
+		))\
 	" >$@.utf8
 	iconv --from-code=UTF8 --to-code=ISO-8859-15 $@.utf8 >$@
 
@@ -539,10 +569,14 @@ native-dist: native-strip-really
 	cd /tmp && lha -aq2o6 $(realpath .)/$(DIST_FOLDER).lha $(DIST_FOLDER)/*
 
 #
-# Clib2 distribution
+# Clib distribution
 #
 clib2-dist: clib2-cross-done-$(GCC_VERSION)
-	cd root-cross/SDK && lha -aq2o6 $(realpath .)/$(CLIB2_RELEASE_ARCHIVE_NAME) clib2
+	cd root-cross/ppc-amigaos/SDK && lha -aq2o6 $(realpath .)/$(CLIB2_RELEASE_ARCHIVE_NAME) clib2
+ifneq ($(CLIB4_SUPPORT),)
+clib4-dist: clib4-cross-done-$(GCC_VERSION)
+	cd root-cross/ppc-amigaos/SDK && lha -aq2o6 $(realpath .)/$(CLIB4_RELEASE_ARCHIVE_NAME) clib4
+endif
 
 #
 # Upload the binary archive to the main Aminet server
@@ -553,12 +587,14 @@ upload-release: native-dist
 	lftp -e "put adtools-$(GCC_BRANCH_NAME)-os4.lha && put ReadMe -o adtools-$(GCC_BRANCH_NAME)-os4.readme && quit" ftp://main.aminet.net/new
 
 #
-# Cleanup clib2
+# Cleanup clib
 #
 
 .PHONY: clean-clib2
 clean-clib2:
-	test ! -d $(CLIB2_DIR) && true || $(MAKE) -C $(CLIB2_DIR) -f GNUmakefile.os4 clean
+	test ! -d $(CLIB2_DIR) || $(MAKE) -C $(CLIB2_DIR) -f GNUmakefile.os4 clean
+clean-clib4:
+	test ! -d $(CLIB4_DIR) || $(MAKE) -C $(CLIB4_DIR) -f GNUmakefile.os4 clean
 
 #
 # Cleanup gcc only
@@ -577,7 +613,7 @@ clean-gcc:
 # Cleanup everything
 #
 .PHONY: clean
-clean: clean-clib2 clean-gcc
+clean: clean-clib2 clean-clib4 clean-gcc
 	rm -Rf	\
 		binutils-cross-build-$(BINUTILS_VERSION) \
 		binutils-native-build-$(BINUTILS_VERSION) \
@@ -587,6 +623,7 @@ clean: clean-clib2 clean-gcc
 		binutils-cross-done-$(BINUTILS_VERSION) \
 		binutils-native-done-$(BINUTILS_VERSION) \
 		clib2-cross-done-$(GCC_VERSION) \
+		clib4-cross-done-$(GCC_VERSION) \
 		includes-done \
 		libraries-done \
 		root-native \
@@ -598,4 +635,4 @@ clean: clean-clib2 clean-gcc
 #
 .PNONY: clean-all
 clean-all: clean
-	rm -Rf downloads-done downloads-done-clib2 downloads
+	rm -Rf downloads-done downloads-done-clib2 downloads-done-clib4 downloads
