@@ -2,7 +2,7 @@ labels:
   role: generic
 
 steps:
-  - name: build-latest-manifest
+  - name: build-ppc-amigaos-latest-manifest
     image: plugins/manifest
     environment:
       PULLREQUEST_DRONE_PULL_REQUEST: 0
@@ -16,7 +16,7 @@ steps:
         from_secret: DOCKERHUB_USERNAME
       password:
         from_secret: DOCKERHUB_PASSWORD
-  - name: build-versioned-manifest
+  - name: build-ppc-amigaos-versioned-manifest
     image: plugins/manifest
     environment:
       PULLREQUEST_DRONE_PULL_REQUEST: 0

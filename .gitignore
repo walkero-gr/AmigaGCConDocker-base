@@ -1,7 +1,8 @@
-os3/
-mos/
-os4/out
-os4/misc/downloads
+68k-amigaos/
+ppc-morphos/
+ppc-amigaos/out
+ppc-amigaos/misc/downloads
+ppc-amigaos/misc/clib2-afxgroup
 *-OBS
 .vscode
 *_bak

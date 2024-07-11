@@ -3,13 +3,13 @@ labels:
   platform: linux/amd64
 
 steps:
-  - name: build-os4-gcc11-base
+  - name: build-ppc-amigaos-gcc11-base
     image: plugins/docker
     settings:
       repo: walkero/amigagccondocker
       # registry: https://index.docker.io/v1/
-      dockerfile: os4/Dockerfile
-      context: os4
+      dockerfile: ppc-amigaos/Dockerfile
+      context: ppc-amigaos
       compress: true
       purge: true
       # dry-run: true
