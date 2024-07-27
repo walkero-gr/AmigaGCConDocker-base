@@ -6,6 +6,8 @@ matrix:
     - 11
     - 8
     - 6
+  TAG:
+    - ${CI_COMMIT_TAG}
 
 steps:
   - name: build-ppc-amigaos-latest-manifest
@@ -27,8 +29,8 @@ steps:
     environment:
       PULLREQUEST_DRONE_PULL_REQUEST: 0
     settings:
-      target: walkero/amigagccondocker:os4-gcc${GCC}-base-${CI_COMMIT_TAG}
-      template: walkero/amigagccondocker:os4-gcc${GCC}-base-${CI_COMMIT_TAG}-ARCH
+      target: walkero/amigagccondocker:os4-gcc${GCC}-base-${TAG}
+      template: walkero/amigagccondocker:os4-gcc${GCC}-base-${TAG}-ARCH
       platforms:
         - linux/amd64
         - linux/arm64
