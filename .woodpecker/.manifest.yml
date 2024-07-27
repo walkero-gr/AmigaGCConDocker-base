@@ -1,12 +1,6 @@
 labels:
   role: generic
 
-matrix:
-  GCC:
-    - 11
-    - 8
-    - 6
-
 steps:
   - name: build-ppc-amigaos-latest-manifest
     image: plugins/manifest
