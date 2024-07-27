@@ -2,8 +2,14 @@ labels:
   role: awsbuilder
   platform: linux/aarch64
 
+matrix:
+  GCC:
+    - 11
+    - 8
+    - 6
+
 steps:
-  - name: build-ppc-amigaos-gcc11-base
+  - name: build-ppc-amigaos-gcc${GCC}-base
     image: plugins/docker
     settings:
       repo: walkero/amigagccondocker
@@ -14,12 +20,12 @@ steps:
       purge: true
       # dry-run: true
       cache_from:
-        - walkero/amigagccondocker:os4-gcc11-base-arm64
+        - walkero/amigagccondocker:os4-gcc${GCC}-base-arm64
       build_args:
         - GCC_VER=11
       tags:
-        - os4-gcc11-base-arm64
-        - os4-gcc11-base-${CI_COMMIT_TAG}-arm64
+        - os4-gcc${GCC}-base-arm64
+        - os4-gcc${GCC}-base-${CI_COMMIT_TAG}-arm64
       username:
         from_secret: DOCKERHUB_USERNAME
       password:
