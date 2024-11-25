@@ -10,7 +10,7 @@ RUN mkdir /repos; \
 
 ##############################################################################
 # The ubuntu:latest tag points to the "latest LTS", since that's the version recommended for general use.
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:latest AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG GCC_VER
@@ -28,7 +28,7 @@ ENV PACKAGES="\
     curl \
     dh-autoreconf \
     flex \
-    g++ \
+    g++-12 \
     gettext \
     git \
     gperf \
@@ -44,7 +44,6 @@ ENV PACKAGES="\
     patch \
     python3 \
     rsync \
-    texinfo \
     wget \
     xz-utils"
 
@@ -58,10 +57,12 @@ COPY --from=git-clone /repos/coreutils /opt/adtools/coreutils/repo
 COPY --from=git-clone /repos/gnulib /opt/adtools/gnulib/repo
 COPY misc /opt/misc
 COPY scripts/compile-adtools.sh /compile-adtools.sh
+COPY scripts/compile-texinfo.sh /compile-texinfo.sh
 
-WORKDIR /opt/adtools
-RUN chmod +x /compile-adtools.sh && bash /compile-adtools.sh
-
+RUN ln -sf /usr/bin/gcc-12 /usr/bin/gcc && \
+    ln -sf /usr/bin/g++-12 /usr/bin/g++ && \
+    chmod +x /compile-texinfo.sh && bash /compile-texinfo.sh && \
+    chmod +x /compile-adtools.sh && bash /compile-adtools.sh
 
 ##############################################################################
 # Final Base environment image

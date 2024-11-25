@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.2.0 - [2024-11-25]
+### Changed
+- Now the build is using Ubuntu 24.04 LTS
+- texinfo 7.0 is compiled and installed manually, because of incompatibilites with latest version
+
+## 1.1.1 - [2024-07-27]
+### Added
+- No changes with this release, but new base images for gcc 6 and 8 are created.
+
 ## 1.1.0 - [2024-07-10]
 ### Added
 - Added the manifest for the latest image on the pipeline

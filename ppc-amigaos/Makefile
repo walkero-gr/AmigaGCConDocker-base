@@ -3,12 +3,12 @@ OS?=os4
 # 8,9,10,11 can be used here
 GCC?=11
 # adtools, afxgroup
-CLIB2_REPO?=adtools
+# CLIB2_REPO?=adtools
 # apt,git,release
-CLIB2_SRC?=apt
+# CLIB2_SRC?=apt
 # OS4 SDK version
 SDK?=54.16
-REL?=1.1.0
+REL?=1.2.0
 
 REPO=walkero/amigagccondocker
 TAG?=$(OS)-gcc$(GCC)-base-$(REL)
@@ -27,7 +27,7 @@ help:
 	@echo "build            - Build the Docker image"
 	@echo "buildnc          - Build the Docker image without using caching"
 # 	@echo "build-exp        - Build the experiment Docker image, with gcc11 and clib4"
-# 	@echo "shell            - Create a container with the latest Docker image and get"
+	@echo "shell            - Create a container with the latest Docker image and get"
 # 	@echo "                   into it"
 # 	@echo "clean            - Remove the docker container, if this still exists."
 # 	@echo ""

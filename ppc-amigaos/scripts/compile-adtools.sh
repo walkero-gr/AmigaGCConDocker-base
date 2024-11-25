@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+cd /opt/adtools
+
 git config --global advice.detachedHead false
 git config --global user.email "walkero@gmail.com"
 git config --global user.name "Georgios Sokianos"
