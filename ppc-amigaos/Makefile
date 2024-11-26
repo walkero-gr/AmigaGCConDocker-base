@@ -8,7 +8,7 @@ GCC?=11
 # CLIB2_SRC?=apt
 # OS4 SDK version
 SDK?=54.16
-REL?=1.2.0
+REL?=1.3.0
 
 REPO=walkero/amigagccondocker
 TAG?=$(OS)-gcc$(GCC)-base-$(REL)

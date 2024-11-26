@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.3.0 - [2024-11-26]
+### Changed
+- Updated clib4 to v1.4.0
+
 ## 1.2.0 - [2024-11-25]
 ### Changed
 - Now the build is using Ubuntu 24.04 LTS
