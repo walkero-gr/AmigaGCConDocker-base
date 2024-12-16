@@ -7,11 +7,13 @@ matrix:
     - 8
     - 6
 
+when:
+  - branch: main
+    event: [tag]
+
 steps:
   - name: build-ppc-amigaos-latest-manifest
     image: plugins/manifest
-    environment:
-      PULLREQUEST_DRONE_PULL_REQUEST: 0
     settings:
       target: "walkero/amigagccondocker:os4-gcc${GCC}-base"
       template: "walkero/amigagccondocker:os4-gcc${GCC}-base-ARCH"
@@ -24,8 +26,6 @@ steps:
         from_secret: DOCKERHUB_PASSWORD
   - name: build-ppc-amigaos-versioned-manifest
     image: plugins/manifest
-    environment:
-      PULLREQUEST_DRONE_PULL_REQUEST: 0
     settings:
       target: "walkero/amigagccondocker:os4-gcc${GCC}-base-${CI_COMMIT_TAG}"
       template: "walkero/amigagccondocker:os4-gcc${GCC}-base-${CI_COMMIT_TAG}-ARCH"
@@ -36,10 +36,6 @@ steps:
         from_secret: DOCKERHUB_USERNAME
       password:
         from_secret: DOCKERHUB_PASSWORD
-
-when:
-  - branch: main
-    event: [tag]
 
 depends_on:
   - build-amd64

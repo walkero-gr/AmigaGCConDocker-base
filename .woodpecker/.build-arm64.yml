@@ -8,6 +8,10 @@ matrix:
     - 8
     - 6
 
+when:
+  - branch: main
+    event: [tag]
+
 steps:
   - name: build-ppc-amigaos-gcc${GCC}-base
     image: plugins/docker
@@ -30,10 +34,6 @@ steps:
         from_secret: DOCKERHUB_USERNAME
       password:
         from_secret: DOCKERHUB_PASSWORD
-
-when:
-  - branch: main
-    event: [push, tag]
 
 depends_on:
   - aws-poweron
