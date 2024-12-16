@@ -22,7 +22,7 @@ steps:
       cache_from:
         - walkero/amigagccondocker:os4-gcc${GCC}-base-arm64
       build_args:
-        - GCC_VER=11
+        - GCC_VER=${GCC}
       tags:
         - os4-gcc${GCC}-base-arm64
         - os4-gcc${GCC}-base-${CI_COMMIT_TAG}-arm64
