@@ -33,6 +33,7 @@ pipeline {
 					stage('build') {
 						steps {
 							sh '''
+								cd ppc-amigaos
 								docker build \
 									--cache-from ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} \
 									--build-arg GCC=${GCC} \
