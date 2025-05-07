@@ -34,9 +34,9 @@ pipeline {
 						steps {
 							sh '''
 								cd ppc-amigaos
-								docker build \
+								docker buildx build \
 									--cache-from ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} \
-									--build-arg GCC=${GCC} \
+									--build-arg GCC_VER=${GCC} \
 									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-${ARCH} \
 									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} \
 									-f Dockerfile .

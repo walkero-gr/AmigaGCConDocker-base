@@ -44,7 +44,7 @@ help:
 # 	@echo ""
 
 build:
-	docker build -f ./Dockerfile \
+	docker buildx build -f ./Dockerfile \
 		-t $(REPO):$(TAG) \
 		--progress plain \
 		--build-arg GCC_VER=$(GCC) .

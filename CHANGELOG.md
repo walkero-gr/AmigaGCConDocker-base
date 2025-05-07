@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.4.0 - [2025-05-07]
+### Changed
+- Updated clib4 to v1.6.0
+
+## 1.4.0 - [2024-12-16]
+### Changed
+- There was a bug in the previous releases, and the base image of GCC 6 and 8 had v11. This release fixes that issue.
+
 ## 1.3.0 - [2024-11-26]
 ### Changed
 - Updated clib4 to v1.4.0
