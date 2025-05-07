@@ -34,7 +34,7 @@ pipeline {
 						steps {
 							sh '''
 								cd ppc-amigaos
-								docker build \
+								docker buildx build \
 									--cache-from ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} \
 									--build-arg GCC_VER=${GCC} \
 									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-${ARCH} \
@@ -62,7 +62,6 @@ pipeline {
 						steps {
 							sh '''
 								docker rmi -f $(docker images --filter=reference="${DOCKERHUB_REPO}:*" -q)
-								docker rmi -f $(docker images --filter=reference="walkero/amigagccondocker:*" -q)
 							'''
 						}
 					}
