@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## 1.4.0 - [2025-05-07]
+## 1.5.0 - [2025-05-07]
 ### Changed
 - Updated clib4 to v1.6.0
 
