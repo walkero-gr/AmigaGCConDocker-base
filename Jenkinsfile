@@ -103,27 +103,27 @@ pipeline {
 							'''
 						}
 					}
+					stage('push-manifests') {
+						when { buildingTag() }
+						steps {
+							sh '''
+								echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
+								docker manifest push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
+								docker manifest push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
+								docker logout
+							'''
+						}
+					}
+					stage('clear-manifests') {
+						when { buildingTag() }
+						steps {
+							sh '''
+								docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
+								docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
+							'''
+						}
+					}
 				}
-			}
-		}
-		stage('push-manifests') {
-			when { buildingTag() }
-			steps {
-				sh '''
-					echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
-					docker manifest push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
-					docker manifest push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
-					docker logout
-				'''
-			}
-		}
-		stage('clear-manifests') {
-			when { buildingTag() }
-			steps {
-				sh '''
-					docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
-					docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
-				'''
 			}
 		}
 	}
