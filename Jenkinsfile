@@ -61,7 +61,10 @@ pipeline {
 					stage('remove-images') {
 						steps {
 							sh '''
+								docker image ls
 								docker rmi -f $(docker images --filter=reference="${DOCKERHUB_REPO}:*" -q)
+								docker image prune -a --force
+								docker image ls
 							'''
 						}
 					}
