@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.6.0 - [2025-08-16]
+### Updated
+- Updated clib4 to v2.0.0
+- Updated gcc11 to v11.5.0
+- Updated binutils to v2.40
+
 ## 1.5.0 - [2025-05-07]
 ### Changed
 - Updated clib4 to v1.6.0
