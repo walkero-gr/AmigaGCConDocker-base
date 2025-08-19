@@ -2,7 +2,7 @@
 FROM bitnami/git:2.50.1 AS git-clone
 
 RUN mkdir /repos; \
-    git clone https://github.com/AmigaLabs/adtools.git -b gcc-11.5.0  /repos/adtools --depth 1; \
+    git clone https://github.com/AmigaLabs/adtools.git  /repos/adtools --depth 1; \
     git clone https://github.com/bminor/binutils-gdb    /repos/binutils-gdb; \
     git clone https://github.com/coreutils/coreutils    /repos/coreutils; \
     git clone https://github.com/coreutils/gnulib       /repos/gnulib
