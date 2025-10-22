@@ -4,7 +4,7 @@ OS?=os4
 GCC?=11
 # OS4 SDK version
 SDK?=54.16
-REL?=1.6.0
+REL?=1.7.0
 
 REPO=walkero/amigagccondocker
 TAG?=$(OS)-gcc$(GCC)-base-$(REL)
@@ -27,13 +27,11 @@ help:
 build:
 	docker buildx build -f ./Dockerfile \
 		-t $(REPO):$(TAG) \
-		--progress plain \
 		--build-arg GCC_VER=$(GCC) .
 
 buildnc:
 	docker buildx build --no-cache -f ./Dockerfile \
 		-t $(REPO):$(TAG) \
-		--progress plain \
 		--build-arg GCC_VER=$(GCC) .
 
 shell:

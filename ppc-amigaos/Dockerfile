@@ -1,5 +1,5 @@
 
-FROM bitnami/git:2.50.1 AS git-clone
+FROM alpine/git:2.49.1 AS git-clone
 
 RUN mkdir /repos; \
     git clone https://github.com/AmigaLabs/adtools.git  /repos/adtools --depth 1; \
