@@ -1,11 +1,11 @@
 
-FROM alpine/git:2.49.1 AS git-clone
+FROM mcp/git:latest AS git-clone
 
 RUN mkdir /repos; \
-    git clone https://github.com/AmigaLabs/adtools.git  /repos/adtools --depth 1; \
-    git clone https://github.com/bminor/binutils-gdb    /repos/binutils-gdb; \
-    git clone https://github.com/coreutils/coreutils    /repos/coreutils; \
-    git clone https://github.com/coreutils/gnulib       /repos/gnulib
+    git clone https://github.com/AmigaLabs/adtools.git      /repos/adtools --depth 1; \
+    git clone https://sourceware.org/git/binutils-gdb.git    /repos/binutils-gdb; \
+    git clone https://github.com/coreutils/coreutils.git    /repos/coreutils; \
+    git clone https://github.com/coreutils/gnulib.git       /repos/gnulib
 
 
 ##############################################################################

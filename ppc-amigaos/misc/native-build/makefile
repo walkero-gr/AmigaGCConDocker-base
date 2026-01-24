@@ -4,9 +4,6 @@
 # We then build the native compiler using the freshly-built cross
 # compiler.
 #
-# This makefile is heavily changed for the AmigaGCConDocker project
-# https://github.com/walkero-gr/AmigaGCConDocker
-#
 # The user running this script must have write access to /gcc
 #
 # ===
@@ -22,6 +19,7 @@ CLIB2_SHA1?=1a42c693e03881f6f969c43ab36ce20d2569751d
 # Optional (DEFAULT 1a42c693e03881f6f969c43ab36ce20d2569751d)
 # Define CLIB2_SHA1 to be the value of the branch or commit to use for clib2
 # ===
+# CLIB4_SHA1?=72aba21c9d0fe0ff8d7af5fc157bf31c48ac6ba8
 CLIB4_SHA1?=HEAD
 # Optional (DEFAULT HEAD)
 # Define CLIB4_SHA1 to be the value of the branch or commit to use for clib4
@@ -32,6 +30,10 @@ CLIB4_SHA1?=HEAD
 SDK_VERSION?=54.16
 # Optional (DEFAULT=54.16):
 # Define SDK_VERSION to specify which version of the Amiga SDK is desired
+SDK_LOC?=
+# Optional (DEFAULT=):
+# Define the path that contains the local version of the SDK to avoid
+# needing to download it
 
 ROOT_DIR=$(realpath .)
 
@@ -40,14 +42,11 @@ CCACHE:=$(shell which ccache)
 HOST_GCC:=$(strip $(CCACHE) gcc)
 HOST_GXX:=$(strip $(CCACHE) g++)
 
-GNU_SERVER=http://ftp.gnu.org/gnu
-# GNU_SERVER=http://ftp.vim.org/ftp/gnu 
-
 GMP_ARCHIVE=gmp-5.1.3.tar.bz2
 MPFR_ARCHIVE=mpfr-3.1.6.tar.bz2
 MPC_ARCHIVE=mpc-1.0.3.tar.gz
 
-BINUTILS_VERSION=2.23.2
+BINUTILS_VERSION=$(shell cd $(BINUTILS_SRC_DIR) 2>/dev/null && git branch --show-current)
 BINUTILS_SRC_DIR=../binutils/repo
 
 GCC_SRC_DIR=../gcc/repo
@@ -58,7 +57,7 @@ ifneq ($(GCC_DEV_PHASE),)
 GCC_DEV_PHASE:= ($(GCC_DEV_PHASE))
 endif
 
-GCC_BRANCH_NAME:=$(word 1, $(subst ., , $(GCC_VERSION)))
+GCC_MAJOR_VERSION:=$(word 1, $(subst ., , $(GCC_VERSION)))
 
 # Handle SDK version and mapping to necessary file URL
 ifeq (54.16,$(SDK_VERSION))
@@ -80,7 +79,7 @@ endif
 endif
 endif
 endif
-SDK_URL=http://www.hyperion-entertainment.biz/index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=$(SDK_URL_FILE)
+SDK_URL=https://www.hyperion-entertainment.biz/index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=$(SDK_URL_FILE)
 
 # Native tools
 COREUTILS_SRC_DIR=../coreutils/repo
@@ -90,7 +89,7 @@ COREUTILS_VERSION=5.2.1
 DIST_VERSION=$(shell date +%Y%m%d)-$(shell git rev-list --count HEAD)
 
 # Set up the necessary variables for the CLIBs
-CLIB4_SUPPORT=$(filter 11 8 6,$(GCC_BRANCH_NAME))
+CLIB4_SUPPORT=$(filter 11 8 6,$(GCC_MAJOR_VERSION))
 CLIB4_URL=https://github.com/AmigaLabs/clib4
 CLIB4_DIR=downloads/clib4/
 CLIB4_RELEASE_ARCHIVE_NAME=adtools-os4-clib4-$(DIST_VERSION).lha
@@ -117,13 +116,6 @@ print-dist-version:
 	@echo $(DIST_VERSION)
 
 #
-# Downloads prepare
-#
-downloads-prepare:
-	mkdir -p downloads && exit $?
-	touch $@
-
-#
 # Downloads clib2
 #
 downloads-done-clib2:
@@ -148,34 +140,33 @@ downloads-done-clib4:
 endif
 
 #
-# Downloads OS4 SDK
-#
-downloads-done-sdk:
-ifeq ("$(wildcard /opt/misc/SDK_$(SDK_VERSION).lha)", "")
-	wget -q "$(SDK_URL)" -O ./downloads/SDK_$(SDK_VERSION).lha
-else
-	cp /opt/misc/SDK_$(SDK_VERSION).lha ./downloads/
-endif
-	touch $@
-
-#
-# Downloads the SDK and libraries necesseary to build the cross compiler
+# Downloads the SDK and libraries necessary to build the cross compiler
 #
 DOWNLOADS_DONE_DEPENDENCY=downloads-done-clib2
 ifneq ($(CLIB4_SUPPORT),)
 DOWNLOADS_DONE_DEPENDENCY+=downloads-done-clib4
 endif
-downloads-done: downloads-prepare $(DOWNLOADS_DONE_DEPENDENCY) downloads-done-sdk
-	cd downloads && wget -N $(GNU_SERVER)/gmp/$(GMP_ARCHIVE)
-	cd downloads && wget -N $(GNU_SERVER)/mpfr/$(MPFR_ARCHIVE)
-	cd downloads && wget -N $(GNU_SERVER)/mpc/$(MPC_ARCHIVE)
+downloads-done: $(DOWNLOADS_DONE_DEPENDENCY)
+ifneq ($(SDK_LOC),)
+	cp $(SDK_LOC)/SDK_$(SDK_VERSION).lha downloads/
+else
+	wget "$(SDK_URL)" -O downloads/SDK_$(SDK_VERSION).lha
+endif
+	cd downloads && wget -N https://ftp.gnu.org/gnu/gmp/$(GMP_ARCHIVE)
+	cd downloads && wget -N https://ftp.gnu.org/gnu/mpfr/$(MPFR_ARCHIVE)
+	cd downloads && wget -N https://ftp.gnu.org/gnu/mpc/$(MPC_ARCHIVE)
 	touch $@
 
 #
 # Builds the cross binutils package (assembler, etc).
 #
 binutils-cross-build-done-$(BINUTILS_VERSION):
-	$(MAKE) -C ../binutils-build SRC_DIR=$(BINUTILS_SRC_DIR) PREFIX=$(CROSS_PREFIX) CROSS_BUILD_DIR=$(ROOT_DIR)/binutils-cross-build-$(BINUTILS_VERSION)
+	$(MAKE) -C ../binutils-build cross \
+		BINUTILS_VERSION=$(BINUTILS_VERSION) \
+		SRC_DIR=$(BINUTILS_SRC_DIR) \
+		PREFIX=$(CROSS_PREFIX) \
+		VERSION=$(BINUTILS_VERSION) \
+		CROSS_BUILD_DIR=$(ROOT_DIR)/binutils-cross-build-$(BINUTILS_VERSION)
 	touch $@
 
 .PHONY: binutils-build
@@ -196,21 +187,17 @@ binutils-install: binutils-cross-done-$(BINUTILS_VERSION)
 #
 includes-done: downloads-done
 	mkdir -p $(CROSS_PREFIX)/ppc-amigaos/SDK/include
-	lha -xfw=downloads -q2 downloads/SDK_$(SDK_VERSION).lha
-# lha -xfw=$(CROSS_PREFIX)/ppc-amigaos/SDK -q2 downloads/SDK_Install/newlib*.lha
-	lha -xfw=downloads/SDK_Install -q2 downloads/SDK_Install/newlib*.lha
-	lha -xfw=downloads/SDK_Install -q2 downloads/SDK_Install/base.lha
+	cd downloads && lha x SDK_$(SDK_VERSION).lha
+	cd downloads/SDK_Install && lha xf newlib*.lha
+	cd downloads/SDK_Install && lha xf base.lha
 ifneq (53.30,$(SDK_VERSION))
 ifneq (53.24,$(SDK_VERSION))
-	lha -xfw=$(CROSS_PREFIX)/ppc-amigaos/SDK -q2 downloads/SDK_Install/execsg*.lha
+	cd downloads/SDK_Install && lha xf execsg*.lha
 endif
 endif
-	rm -rf downloads/SDK_Install/*.lha
-	mv downloads/SDK_Install/newlib* $(CROSS_PREFIX)/ppc-amigaos/SDK
-	mv downloads/SDK_Install/Include/* $(CROSS_PREFIX)/ppc-amigaos/SDK/include
-	cp -r $(CROSS_PREFIX)/ppc-amigaos/SDK/Include/* $(CROSS_PREFIX)/ppc-amigaos/SDK/include
-	rm -rf $(CROSS_PREFIX)/ppc-amigaos/SDK/Include
-
+	cd downloads/SDK_Install && rm -Rf *.lha
+	cd downloads/SDK_Install && mv newlib* $(CROSS_PREFIX)/ppc-amigaos/SDK
+	cd downloads/SDK_Install && mv Include/* $(CROSS_PREFIX)/ppc-amigaos/SDK/include
 	rm -Rf downloads/SDK_Install downloads/SDK_Install.info
 	touch $@
 
@@ -268,7 +255,7 @@ xgcc-done-$(GCC_VERSION): includes-done binutils-cross-done-$(BINUTILS_VERSION)
 #
 ifneq ($(CLIB4_SUPPORT),)
 clib4-cross-done-$(GCC_VERSION): $(CLIB_CROSS_DONE_DEPENDENCY)
-# Build clib4 using xgcc that have just been built
+# Build clib using xgcc that have just been built
 	$(MAKE) -C $(CLIB4_DIR) -f GNUmakefile.os4 \
 		CC="$(XGCC_CC)" \
 		AR="$(XAR)" \
@@ -276,7 +263,7 @@ clib4-cross-done-$(GCC_VERSION): $(CLIB_CROSS_DONE_DEPENDENCY)
 		STRIP=$(STRIP) \
 		INSTALL_PREFIX=$(CROSS_PREFIX)/ppc-amigaos/SDK/clib4 \
 		SDK_INCLUDE=$(CROSS_PREFIX)/ppc-amigaos/SDK/include
-# Copy clib4 libs and includes
+# Copy clib libs and includes
 	$(MAKE) -C $(CLIB4_DIR) -f GNUmakefile.os4 install \
 		INSTALL_PREFIX=$(CROSS_PREFIX)/ppc-amigaos/SDK/clib4
 	cp $(CLIB4_DIR)/LICENSE* $(CROSS_PREFIX)/ppc-amigaos/SDK/clib4
@@ -284,12 +271,12 @@ clib4-cross-done-$(GCC_VERSION): $(CLIB_CROSS_DONE_DEPENDENCY)
 endif
 
 clib2-cross-done-$(GCC_VERSION): $(CLIB_CROSS_DONE_DEPENDENCY)
-# Build clib2 using xgcc that have just been built
+# Build clib using xgcc that have just been built
 	$(MAKE) -C $(CLIB2_DIR) -f GNUmakefile.os4 \
 		CC="$(XGCC_CC)" \
 		AR="$(XAR)" \
 		RANLIB="$(XRANLIB)"
-# Copy clib2 libs and includes
+# Copy clib libs and includes
 	rm -Rf $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/lib $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/include
 	mkdir -p $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/lib
 	mkdir -p $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/include
@@ -350,8 +337,10 @@ libraries-done: $(NATIVE_LIBRARY_DEPENDENCIES)
 #
 binutils-native-done-$(BINUTILS_VERSION): libraries-done
 	PATH="$(CROSS_PREFIX)/bin:$(PATH)" $(MAKE) -C ../binutils-build native \
+			BINUTILS_VERSION=$(BINUTILS_VERSION) \
 			SRC_DIR=$(BINUTILS_SRC_DIR) \
 			PREFIX=/gcc \
+			VERSION=$(BINUTILS_VERSION) \
 			NATIVE_BUILD_DIR=$(ROOT_DIR)/binutils-native-build-$(BINUTILS_VERSION)
 	touch $@
 
@@ -373,6 +362,7 @@ gcc-native-done-$(GCC_VERSION): binutils-native-done-$(BINUTILS_VERSION)
 ifeq ($(CROSS_IS_PRESENT),1)
 coreutils-native-done:
 else
+
 coreutils-native-done: gcc-cross-done-$(GCC_VERSION)
 endif
 	mkdir -p coreutils-native-build
@@ -389,7 +379,7 @@ endif
 	touch $@
 
 
-GCC_BASE_BRANCH_NAME=$(GCC_BRANCH_NAME)-base
+GCC_BASE_BRANCH_NAME=$(GCC_MAJOR_VERSION)-base
 #
 # Build the main docs
 #
@@ -528,6 +518,8 @@ private-native-separate-dist:
 	$(foreach var,$(wildcard $(ROOT_DIR)/root-native-gcc/gcc/bin/*), $(STRIP) $(STRIPFLAGS) $(var) ; ) true
 	$(STRIP) $(STRIPFLAGS) $(ROOT_DIR)/root-native-gcc/gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/cc1
 	$(STRIP) $(STRIPFLAGS) $(ROOT_DIR)/root-native-gcc/gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/cc1plus
+	$(STRIP) $(STRIPFLAGS) $(ROOT_DIR)/root-native-gcc/gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/cc1obj
+	$(STRIP) $(STRIPFLAGS) $(ROOT_DIR)/root-native-gcc/gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/cc1objplus
 	$(STRIP) $(STRIPFLAGS) $(ROOT_DIR)/root-native-gcc/gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/lto1
 	$(STRIP) $(STRIPFLAGS) $(ROOT_DIR)/root-native-gcc/gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/lto-wrapper
 	rm -Rf dist
@@ -544,13 +536,15 @@ native-strip-really:
 	$(foreach var,$(wildcard /gcc/bin/*), $(STRIP) --strip-all --strip-unneeded-rel-relocs $(var) ; ) true
 	$(STRIP) $(STRIPFLAGS) /gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/cc1
 	$(STRIP) $(STRIPFLAGS) /gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/cc1plus
+	$(STRIP) $(STRIPFLAGS) /gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/cc1obj
+	$(STRIP) $(STRIPFLAGS) /gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/cc1objplus
 	$(STRIP) $(STRIPFLAGS) /gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/lto1
 	$(STRIP) $(STRIPFLAGS) /gcc/libexec/gcc/ppc-amigaos/$(GCC_VERSION)/lto-wrapper
 
 #
 # Native distribution archive
 #
-DIST_FOLDER:=adtools-os4-$(GCC_BRANCH_NAME)-$(DIST_VERSION)
+DIST_FOLDER:=adtools-os4-$(GCC_MAJOR_VERSION)-$(DIST_VERSION)
 
 native-dist: native-strip-really
 	rm -f $(realpath .)/$(DIST_FOLDER).lha
@@ -562,20 +556,20 @@ native-dist: native-strip-really
 	../bin/dedup /tmp/$(DIST_FOLDER) >.dedup
 	echo "; Create alternative filenames" >/tmp/$(DIST_FOLDER)/RestoreLinks
 	../bin/dedup /tmp/$(DIST_FOLDER) --amigaos --folder-is-pwd >>/tmp/$(DIST_FOLDER)/RestoreLinks
-# Disabled until we find a way to keep softlinks via lha
+# Disbaled until we find a way to keep softlinks via lha
 #	sh -x .dedup
 #	rm .dedup
 
-	cd /tmp && lha -aq2o6 $(realpath .)/$(DIST_FOLDER).lha $(DIST_FOLDER)/*
+	cd /tmp && lha ao5 $(realpath .)/$(DIST_FOLDER).lha $(DIST_FOLDER)/*
 
 #
 # Clib distribution
 #
 clib2-dist: clib2-cross-done-$(GCC_VERSION)
-	cd root-cross/ppc-amigaos/SDK && lha -aq2o6 $(realpath .)/$(CLIB2_RELEASE_ARCHIVE_NAME) clib2
+	cd root-cross/ppc-amigaos/SDK && lha ao5 $(realpath .)/$(CLIB2_RELEASE_ARCHIVE_NAME) clib2
 ifneq ($(CLIB4_SUPPORT),)
 clib4-dist: clib4-cross-done-$(GCC_VERSION)
-	cd root-cross/ppc-amigaos/SDK && lha -aq2o6 $(realpath .)/$(CLIB4_RELEASE_ARCHIVE_NAME) clib4
+	cd root-cross/ppc-amigaos/SDK && lha ao5 $(realpath .)/$(CLIB4_RELEASE_ARCHIVE_NAME) clib4
 endif
 
 #
@@ -583,8 +577,8 @@ endif
 #
 .PHONY: upload-release
 upload-release: native-dist
-	ln -s $(DIST_FOLDER).lha adtools-$(GCC_BRANCH_NAME)-os4.lha
-	lftp -e "put adtools-$(GCC_BRANCH_NAME)-os4.lha && put ReadMe -o adtools-$(GCC_BRANCH_NAME)-os4.readme && quit" ftp://main.aminet.net/new
+	ln -s $(DIST_FOLDER).lha adtools-$(GCC_MAJOR_VERSION)-os4.lha
+	lftp -e "put adtools-$(GCC_MAJOR_VERSION)-os4.lha && put ReadMe -o adtools-$(GCC_MAJOR_VERSION)-os4.readme && quit" ftp://main.aminet.net/new
 
 #
 # Cleanup clib
