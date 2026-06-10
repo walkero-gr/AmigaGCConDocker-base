@@ -7,14 +7,6 @@ pipeline {
 		DOCKERHUB_REPO="walkero/amigagccondocker"
 	}
 	stages {
-		stage('aws-poweron') {
-			when { buildingTag() }
-			steps {
-				sh '''
-					aws ec2 start-instances --instance-ids i-07474e4fe80f14754 i-02bb3cbe63a2b3fef
-				'''
-			}
-		}
 		stage('build-images') {
 			when { buildingTag() }
 			matrix {
@@ -25,10 +17,10 @@ pipeline {
 					}
 					axis {
 						name 'GCC'
-						values '11', '8'
+						values '13', '11', '8', '6'
 					}
 				}
-				agent { label "aws-${ARCH}" }
+				agent { label "agent-${ARCH}" }
 				stages {
 					stage('build') {
 						steps {
@@ -58,16 +50,16 @@ pipeline {
 							'''
 						}
 					}
-					stage('remove-images') {
-						steps {
-							sh '''
-								docker image ls
-								docker rmi -f $(docker images --filter=reference="${DOCKERHUB_REPO}:*" -q)
-								docker image prune -a --force
-								docker image ls
-							'''
-						}
-					}
+					// stage('remove-images') {
+					// 	steps {
+					// 		sh '''
+					// 			docker image ls
+					// 			docker rmi -f $(docker images --filter=reference="${DOCKERHUB_REPO}:*" -q)
+					// 			docker image prune -a --force
+					// 			docker image ls
+					// 		'''
+					// 	}
+					// }
 				}
 				post {
 					always {
@@ -84,7 +76,7 @@ pipeline {
 				axes {
 					axis {
 						name 'GCC'
-						values '11', '8'
+						values '13', '11', '8', '6'
 					}
 				}
 				stages {
@@ -114,15 +106,15 @@ pipeline {
 							'''
 						}
 					}
-					stage('clear-manifests') {
-						when { buildingTag() }
-						steps {
-							sh '''
-								docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
-								docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
-							'''
-						}
-					}
+					// stage('clear-manifests') {
+					// 	when { buildingTag() }
+					// 	steps {
+					// 		sh '''
+					// 			docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
+					// 			docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
+					// 		'''
+					// 	}
+					// }
 				}
 			}
 		}

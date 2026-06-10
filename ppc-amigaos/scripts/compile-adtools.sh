@@ -15,9 +15,6 @@ git submodule init && \
 	gild/bin/gild checkout binutils $BINUTILS && \
 	gild/bin/gild checkout gcc $GCC_VER
 
-\cp /opt/misc/native-build/makefile /opt/adtools/native-build/makefile
-\cp /opt/misc/texi2pod.pl /opt/adtools/binutils/repo/etc/
-
 # Compile gcc
 echo "-------- START GCC COMPILATION"
 make -C native-build gcc-cross CROSS_PREFIX=/opt/ppc-amigaos BINUTILS_VERSION=$BINUTILS -j$(nproc --ignore=1)
