@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.7.0 - [2026-06-10]
+### Added
+- Added gcc13
+
+### Changed
+- Added support for C#
+
 ## 1.6.0 - [2025-08-16]
 ### Updated
 - Updated clib4 to v2.0.0
