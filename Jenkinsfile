@@ -24,48 +24,50 @@ pipeline {
 				stages {
 					stage('build') {
 						steps {
-							sh '''
+							sh """
 								cd ppc-amigaos
 								docker build \
+									--provenance=false \
 									--cache-from ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} \
 									--build-arg GCC_VER=${GCC} \
 									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-${ARCH} \
 									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} \
 									-f Dockerfile .
-							'''
+							"""
 						}
 					}
 					stage('dockerhub-login') {
 						steps {
-							sh '''
+							sh """
 								echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
-							'''
+							"""
 						}
 					}
 					stage('push-images') {
 						steps {
-							sh '''
-								docker push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-${ARCH}
-								docker push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH}
-							'''
+							sh """
+								set -e
+								docker push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-${ARCH} || { echo "Failed to push tagged image"; exit 1; }
+								docker push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} || { echo "Failed to push latest image"; exit 1; }
+							"""
 						}
 					}
 					// stage('remove-images') {
 					// 	steps {
-					// 		sh '''
+					// 		sh """
 					// 			docker image ls
 					// 			docker rmi -f $(docker images --filter=reference="${DOCKERHUB_REPO}:*" -q)
 					// 			docker image prune -a --force
 					// 			docker image ls
-					// 		'''
+					// 		"""
 					// 	}
 					// }
 				}
 				post {
 					always {
-						sh '''
+						sh """
 							docker logout
-						'''
+						"""
 					}
 				}
 			}
@@ -82,7 +84,7 @@ pipeline {
 				stages {
 					stage('create') {
 						steps {
-							sh '''
+							sh """
 								docker manifest create \
 									--amend ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME} \
 									${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-amd64 \
@@ -92,27 +94,27 @@ pipeline {
 									--amend ${DOCKERHUB_REPO}:os4-gcc${GCC}-base \
 									${DOCKERHUB_REPO}:os4-gcc${GCC}-base-amd64 \
 									${DOCKERHUB_REPO}:os4-gcc${GCC}-base-arm64
-							'''
+							"""
 						}
 					}
 					stage('push-manifests') {
 						when { buildingTag() }
 						steps {
-							sh '''
+							sh """
 								echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
 								docker manifest push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
 								docker manifest push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
 								docker logout
-							'''
+							"""
 						}
 					}
 					// stage('clear-manifests') {
 					// 	when { buildingTag() }
 					// 	steps {
-					// 		sh '''
+					// 		sh """
 					// 			docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
 					// 			docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
-					// 		'''
+					// 		"""
 					// 	}
 					// }
 				}
