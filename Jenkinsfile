@@ -2,23 +2,33 @@ pipeline {
 	agent any
 	environment {
 		DOCKERHUB_CREDS=credentials('walkero-dockerhub')
-		AWS_CREDS=credentials('aws-ec2-credentials')
-		AWS_DEFAULT_REGION="eu-north-1"
 		DOCKERHUB_REPO="walkero/amigagccondocker"
 	}
 	stages {
 		stage('build-dependencies-image') {
 			when { buildingTag() }
-			steps {
-				sh """
-					cd ppc-amigaos
-					buildx x build \
-						--no-cache \
-						--provenance=false \
-						--build-arg GCC_VER=${GCC} \
-						-t ${DOCKERHUB_REPO}:deps \
-						-f Dockerfile.deps .
-				"""
+			matrix {
+				axes {
+					axis {
+						name 'ARCH'
+						values 'amd64', 'arm64'
+					}
+				}
+				agent { label "agent-${ARCH}" }
+				stages {
+					stage('build') {
+						steps {
+							sh """
+								cd ppc-amigaos
+								docker buildx build \
+									--no-cache \
+									--provenance=false \
+									-t ${DOCKERHUB_REPO}:deps \
+									-f Dockerfile.deps .
+							"""
+						}
+					}
+				}
 			}
 		}
 
