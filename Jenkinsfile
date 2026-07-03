@@ -12,7 +12,7 @@ pipeline {
 			steps {
 				sh """
 					cd ppc-amigaos
-					docker buildx build \
+					buildx x build \
 						--no-cache \
 						--provenance=false \
 						--build-arg GCC_VER=${GCC} \
@@ -41,7 +41,7 @@ pipeline {
 						steps {
 							sh """
 								cd ppc-amigaos
-								docker build \
+								docker buildx build \
 									--provenance=false \
 									--build-arg GCC_VER=${GCC} \
 									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-${ARCH} \
