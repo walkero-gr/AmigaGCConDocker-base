@@ -1,15 +1,3 @@
-
-FROM mcp/git:latest AS git-clone
-
-RUN mkdir /repos; \
-    git clone https://github.com/AmigaLabs/adtools.git      /repos/adtools --depth 1; \
-    git clone https://sourceware.org/git/binutils-gdb.git   /repos/binutils-gdb; \
-    git clone https://github.com/coreutils/coreutils.git    /repos/coreutils; \
-    git clone https://github.com/coreutils/gnulib.git       /repos/gnulib
-
-
-##############################################################################
-# The ubuntu:latest tag points to the "latest LTS", since that's the version recommended for general use.
 FROM ubuntu:latest AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -50,11 +38,11 @@ ENV PACKAGES="\
 RUN apt-get update && \
     apt-get -y --no-install-recommends install ${PACKAGES};
 
-# Copy necessary repos from git-clone
-COPY --from=git-clone /repos/adtools /opt/adtools
-COPY --from=git-clone /repos/binutils-gdb /opt/adtools/binutils/repo
-COPY --from=git-clone /repos/coreutils /opt/adtools/coreutils/repo
-COPY --from=git-clone /repos/gnulib /opt/adtools/gnulib/repo
+# Copy necessary repos from walkero/amigagccondocker:deps
+COPY --from=walkero/amigagccondocker:deps /repos/adtools /opt/adtools
+COPY --from=walkero/amigagccondocker:deps /repos/binutils-gdb /opt/adtools/binutils/repo
+COPY --from=walkero/amigagccondocker:deps /repos/coreutils /opt/adtools/coreutils/repo
+COPY --from=walkero/amigagccondocker:deps /repos/gnulib /opt/adtools/gnulib/repo
 COPY misc /opt/misc
 COPY scripts/compile-adtools.sh /compile-adtools.sh
 COPY scripts/compile-texinfo.sh /compile-texinfo.sh
@@ -67,6 +55,12 @@ RUN ln -sf /usr/bin/gcc-12 /usr/bin/gcc && \
 ##############################################################################
 # Final Base environment image
 FROM ubuntu:latest
-LABEL maintainer="Georgios Sokianos <walkero@gmail.com>"
+LABEL maintainer="Georgios Sokianos <walkero@gmail.com>" \
+      org.opencontainers.image.title="PPC AmigaOS cross-compiler base image" \
+      org.opencontainers.image.description="Development image containing the ppc-amigaos SDK, compiler tools, and necessary clibs" \
+      org.opencontainers.image.source="https://github.com/walkero-gr/AmigaGCConDocker-base" \
+      org.opencontainers.image.url="https://github.com/walkero-gr/AmigaGCConDocker-base" \
+      org.opencontainers.image.vendor="walkero" \
+      org.opencontainers.image.base.name="ubuntu:latest"
 
 COPY --from=builder /opt/ppc-amigaos /opt/ppc-amigaos

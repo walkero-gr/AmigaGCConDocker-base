@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## 1.8.0 - [2026-07-03]
+### Updated
+- Updated the official AmigaOS 4.1 FE SDK with v54.25
+
+### Changed
+- Added a separated dependencies docker image that will help to speed up builds. This is not shared in docker hub, but it is required to be available before buildeing the base images
+
+### Fixed
+- gcc 6 cross-sompiler fails to build (#50)
+- setenv replacement patch doesn't clean up variables (#30)
+
 ## 1.7.0 - [2026-06-10]
 ### Added
 - Added gcc13

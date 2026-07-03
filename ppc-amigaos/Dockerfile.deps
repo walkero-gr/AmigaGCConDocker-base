@@ -1,0 +1,14 @@
+FROM mcp/git:latest
+LABEL maintainer="Georgios Sokianos <walkero@gmail.com>" \
+      org.opencontainers.image.title="PPC AmigaOS cross-compiler dependencies" \
+      org.opencontainers.image.description="Development image with adtools, binutils, coreutils, and gnulib repositories for PPC AmigaOS compilation" \
+      org.opencontainers.image.source="https://github.com/walkero-gr/AmigaGCConDocker-base" \
+      org.opencontainers.image.url="https://github.com/walkero-gr/AmigaGCConDocker-base" \
+      org.opencontainers.image.vendor="walkero" \
+      org.opencontainers.image.base.name="mcp/git:latest"
+
+RUN mkdir /repos /downloads; \
+    git clone https://github.com/AmigaLabs/adtools.git      /repos/adtools --depth 1; \
+    git clone https://sourceware.org/git/binutils-gdb.git   /repos/binutils-gdb; \
+    git clone https://github.com/coreutils/coreutils.git    /repos/coreutils; \
+    git clone https://github.com/coreutils/gnulib.git       /repos/gnulib;

@@ -7,6 +7,21 @@ pipeline {
 		DOCKERHUB_REPO="walkero/amigagccondocker"
 	}
 	stages {
+		stage('build-dependencies-image') {
+			when { buildingTag() }
+			steps {
+				sh """
+					cd ppc-amigaos
+					docker buildx build \
+						--no-cache \
+						--provenance=false \
+						--build-arg GCC_VER=${GCC} \
+						-t ${DOCKERHUB_REPO}:deps \
+						-f Dockerfile.deps .
+				"""
+			}
+		}
+
 		stage('build-images') {
 			when { buildingTag() }
 			matrix {
@@ -28,7 +43,6 @@ pipeline {
 								cd ppc-amigaos
 								docker build \
 									--provenance=false \
-									--cache-from ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} \
 									--build-arg GCC_VER=${GCC} \
 									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-${ARCH} \
 									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} \
