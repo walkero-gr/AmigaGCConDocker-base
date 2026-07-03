@@ -47,102 +47,92 @@ pipeline {
 				}
 				agent { label "agent-${ARCH}" }
 				stages {
-					stage('build') {
+					stage('build-and-push') {
 						steps {
-							sh """
-								cd ppc-amigaos
-								docker buildx build \
-									--provenance=false \
-									--build-arg GCC_VER=${GCC} \
-									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-${ARCH} \
-									-t ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} \
-									-f Dockerfile .
-							"""
+							script {
+								buildAndPush(GCC, ARCH)
+							}
 						}
-					}
-					stage('dockerhub-login') {
-						steps {
-							sh """
-								echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
-							"""
-						}
-					}
-					stage('push-images') {
-						steps {
-							sh """
-								set -e
-								docker push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-${ARCH} || { echo "Failed to push tagged image"; exit 1; }
-								docker push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${ARCH} || { echo "Failed to push latest image"; exit 1; }
-							"""
-						}
-					}
-					// stage('remove-images') {
-					// 	steps {
-					// 		sh """
-					// 			docker image ls
-					// 			docker rmi -f $(docker images --filter=reference="${DOCKERHUB_REPO}:*" -q)
-					// 			docker image prune -a --force
-					// 			docker image ls
-					// 		"""
-					// 	}
-					// }
-				}
-				post {
-					always {
-						sh """
-							docker logout
-						"""
 					}
 				}
 			}
 		}
 		stage('create-manifests') {
 			when { buildingTag() }
-			matrix {
-				axes {
-					axis {
-						name 'GCC'
-						values '13', '11', '8', '6'
-					}
-				}
-				stages {
-					stage('create') {
-						steps {
-							sh """
-								docker manifest create \
-									--amend ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME} \
-									${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-amd64 \
-									${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}-arm64
-
-								docker manifest create \
-									--amend ${DOCKERHUB_REPO}:os4-gcc${GCC}-base \
-									${DOCKERHUB_REPO}:os4-gcc${GCC}-base-amd64 \
-									${DOCKERHUB_REPO}:os4-gcc${GCC}-base-arm64
-							"""
+			stages {
+				stage('create-and-push') {
+					steps {
+						script {
+							createAndPushManifests(['13', '11', '8', '6'])
 						}
 					}
-					stage('push-manifests') {
-						when { buildingTag() }
-						steps {
-							sh """
-								echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
-								docker manifest push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
-								docker manifest push ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
-								docker logout
-							"""
-						}
-					}
-					// stage('clear-manifests') {
-					// 	when { buildingTag() }
-					// 	steps {
-					// 		sh """
-					// 			docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base-${TAG_NAME}
-					// 			docker manifest rm ${DOCKERHUB_REPO}:os4-gcc${GCC}-base
-					// 		"""
-					// 	}
-					// }
 				}
 			}
 		}
+	}
+}
+
+def buildAndPush(gccVer, arch) {
+	def imageTagBase = "${env.DOCKERHUB_REPO}:os4-gcc${gccVer}-base"
+	def imageTagVersioned = "${imageTagBase}-${env.TAG_NAME}-${arch}"
+	def imageTagLatest = "${imageTagBase}-${arch}"
+
+	try {
+		sh """
+			cd ppc-amigaos
+			docker buildx build \
+				--provenance=false \
+				--build-arg GCC_VER=${gccVer} \
+				-t ${imageTagVersioned} \
+				-t ${imageTagLatest} \
+				-f Dockerfile .
+		"""
+		retry(3) {
+			sh """
+				echo \$DOCKERHUB_CREDS_PSW | docker login -u \$DOCKERHUB_CREDS_USR --password-stdin
+				docker push ${imageTagVersioned}
+				docker push ${imageTagLatest}
+			"""
+		}
+	} finally {
+		sh 'docker logout'
+	}
+}
+
+def createAndPushManifests(gccVersions) {
+	gccVersions.each { gccVer ->
+		def imageTagBase = "${env.DOCKERHUB_REPO}:os4-gcc${gccVer}-base"
+		def imageTagVersioned = "${imageTagBase}-${env.TAG_NAME}"
+		def imageTagLatest = imageTagBase
+
+		sh """
+			docker manifest create \
+				--amend ${imageTagVersioned} \
+				${imageTagVersioned}-amd64 \
+				${imageTagVersioned}-arm64
+
+			docker manifest create \
+				--amend ${imageTagLatest} \
+				${imageTagLatest}-amd64 \
+				${imageTagLatest}-arm64
+		"""
+	}
+
+	try {
+		sh 'echo \$DOCKERHUB_CREDS_PSW | docker login -u \$DOCKERHUB_CREDS_USR --password-stdin'
+		gccVersions.each { gccVer ->
+			def imageTagBase = "${env.DOCKERHUB_REPO}:os4-gcc${gccVer}-base"
+			def imageTagVersioned = "${imageTagBase}-${env.TAG_NAME}"
+			def imageTagLatest = imageTagBase
+
+			retry(3) {
+				sh """
+					docker manifest push ${imageTagVersioned}
+					docker manifest push ${imageTagLatest}
+				"""
+			}
+		}
+	} finally {
+		sh 'docker logout'
 	}
 }
