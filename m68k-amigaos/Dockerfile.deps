@@ -1,0 +1,13 @@
+FROM mcp/git:latest
+LABEL maintainer="Georgios Sokianos <walkero@gmail.com>" \
+      org.opencontainers.image.title="m68k AmigaOS cross-compiler dependencies" \
+      org.opencontainers.image.description="Development image with adtools, binutils, coreutils, and gnulib repositories for m68k AmigaOS compilation" \
+      org.opencontainers.image.source="https://github.com/walkero-gr/AmigaGCConDocker-base" \
+      org.opencontainers.image.url="https://github.com/walkero-gr/AmigaGCConDocker-base" \
+      org.opencontainers.image.vendor="walkero" \
+      org.opencontainers.image.base.name="mcp/git:latest"
+
+RUN mkdir /repos && \
+    git clone https://github.com/AmigaPorts/m68k-amigaos-gcc.git /repos/amiga-gcc
+
+#     git clone https://codeberg.org/bebbo/amiga-gcc.git      /repos/amiga-gcc --depth 1;
