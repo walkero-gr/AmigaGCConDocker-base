@@ -1,7 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## 1.8.0 - [2026-07-03]
+## [Unreleased]
+
+### Changed
+
+- Enabled sjlj-exceptions again to the compilers, because otherwise C++ exceptions where failing, especially with newlib. Non-sjlj-exceptions are much faster when they are dealed by the c-library, and newlib doesn't support it. Currently only clib4 knows how to deal with them. There is an investigation done at https://github.com/AmigaLabs/adtools/issues/42
+
+## [1.8.0] - 2026-07-03
+
 ### Updated
 - Updated the official AmigaOS 4.1 FE SDK with v54.25
 
@@ -12,41 +19,49 @@ All notable changes to this project will be documented in this file.
 - gcc 6 cross-sompiler fails to build (#50)
 - setenv replacement patch doesn't clean up variables (#30)
 
-## 1.7.0 - [2026-06-10]
+## [1.7.0] - 2026-06-10
+
 ### Added
 - Added gcc13
 
 ### Changed
 - Added support for C#
 
-## 1.6.0 - [2025-08-16]
+## [1.6.0] - 2025-08-16
+
 ### Updated
 - Updated clib4 to v2.0.0
 - Updated gcc11 to v11.5.0
 - Updated binutils to v2.40
 
-## 1.5.0 - [2025-05-07]
+## [1.5.0] - 2025-05-07
+
 ### Changed
 - Updated clib4 to v1.6.0
 
-## 1.4.0 - [2024-12-16]
+## [1.4.0] - 2024-12-16
+
 ### Changed
 - There was a bug in the previous releases, and the base image of GCC 6 and 8 had v11. This release fixes that issue.
 
-## 1.3.0 - [2024-11-26]
+## [1.3.0] - 2024-11-26
+
 ### Changed
 - Updated clib4 to v1.4.0
 
-## 1.2.0 - [2024-11-25]
+## [1.2.0] - 2024-11-25
+
 ### Changed
 - Now the build is using Ubuntu 24.04 LTS
 - texinfo 7.0 is compiled and installed manually, because of incompatibilites with latest version
 
-## 1.1.1 - [2024-07-27]
+## [1.1.1] - 2024-07-27
+
 ### Added
 - No changes with this release, but new base images for gcc 6 and 8 are created.
 
-## 1.1.0 - [2024-07-10]
+## [1.1.0] - 2024-07-10
+
 ### Added
 - Added the manifest for the latest image on the pipeline
 
@@ -56,7 +71,8 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Fixed the "GLIBC_2.38 not found" error
 
-## 1.0.0 - [2024-06-04]
+## [1.0.0] - 2024-06-04
+
 ### Changed
 - Splitted the base images repository from the [AmigaGCCOnDocker](https://github.com/walkero-gr/AmigaGCConDocker)
 - Added version on every release
