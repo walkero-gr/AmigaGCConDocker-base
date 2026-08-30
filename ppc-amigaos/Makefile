@@ -2,7 +2,7 @@
 OS?=os4
 # 8,9,10,11 can be used here
 GCC?=11
-REL?=1.8.0
+REL?=1.9.0
 
 REPO=walkero/amigagccondocker
 TAG?=$(OS)-gcc$(GCC)-base-$(REL)

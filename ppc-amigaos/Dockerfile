@@ -39,10 +39,10 @@ RUN apt-get update && \
     apt-get -y --no-install-recommends install ${PACKAGES};
 
 # Copy necessary repos from walkero/amigagccondocker:deps
-COPY --from=walkero/amigagccondocker:deps /repos/adtools /opt/adtools
-COPY --from=walkero/amigagccondocker:deps /repos/binutils-gdb /opt/adtools/binutils/repo
-COPY --from=walkero/amigagccondocker:deps /repos/coreutils /opt/adtools/coreutils/repo
-COPY --from=walkero/amigagccondocker:deps /repos/gnulib /opt/adtools/gnulib/repo
+COPY --from=walkero/amigagccondocker:ppc-amigaos-deps /repos/adtools /opt/adtools
+COPY --from=walkero/amigagccondocker:ppc-amigaos-deps /repos/binutils-gdb /opt/adtools/binutils/repo
+COPY --from=walkero/amigagccondocker:ppc-amigaos-deps /repos/coreutils /opt/adtools/coreutils/repo
+COPY --from=walkero/amigagccondocker:ppc-amigaos-deps /repos/gnulib /opt/adtools/gnulib/repo
 COPY misc /opt/misc
 COPY scripts/compile-adtools.sh /compile-adtools.sh
 COPY scripts/compile-texinfo.sh /compile-texinfo.sh
