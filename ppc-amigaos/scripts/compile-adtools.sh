@@ -8,7 +8,7 @@ BINUTILS=2.23.2
 fi
 
 # \cp -R /opt/misc/gcc/* /opt/adtools/gcc/
-# \cp -R /opt/misc/gcc-build/* /opt/adtools/gcc-build/
+\cp -R /opt/misc/gcc-build/* /opt/adtools/gcc-build/
 # \cp -R /opt/misc/binutils-build/* /opt/adtools/binutils-build/
 # rm /opt/adtools/gcc/11/patches/0043-Added-eh-frame-hdr-in-LINK_SPEC.patch
 
