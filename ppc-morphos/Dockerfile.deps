@@ -1,0 +1,25 @@
+# FROM mcp/git:latest
+FROM ubuntu:latest AS builder
+LABEL maintainer="Georgios Sokianos <walkero@gmail.com>" \
+      org.opencontainers.image.title="PPC MorphOS cross-compiler dependencies" \
+      org.opencontainers.image.description="Development image with sdk archives for PPC MorphOS compilation" \
+      org.opencontainers.image.source="https://github.com/walkero-gr/AmigaGCConDocker-base" \
+      org.opencontainers.image.url="https://github.com/walkero-gr/AmigaGCConDocker-base" \
+      org.opencontainers.image.vendor="walkero" \
+      org.opencontainers.image.base.name="mcp/git:latest"
+
+ENV PACKAGES="\
+    ca-certificates \
+    curl"
+
+# ENV PACKS_DATE="20230510"
+ENV PACKS_DATE="20260529"
+
+RUN apt-get update && \
+    apt-get -y --no-install-recommends install ${PACKAGES}; \
+    mkdir /packages && \
+    curl --retry 5 --retry-delay 2 --retry-connrefused -fskSL "https://www.morphos-team.net/files/src/sdk/sdk-source-${PACKS_DATE}.tar.xz" -o /packages/sdk-source-${PACKS_DATE}.tar.xz && \
+    curl --retry 5 --retry-delay 2 --retry-connrefused -fskSL "https://www.morphos-team.net/files/sdk-${PACKS_DATE}.lha" -o /packages/sdk-${PACKS_DATE}.lha
+    
+
+# git clone https://github.com/NetBSD/pkgsrc /repos/pkgsrc --depth 1;
