@@ -9,6 +9,7 @@ TAG?=$(OS)-gcc$(GCC)-base-$(REL)
 NAME=$(TAG)
 VOLUMES?=-v "${PWD}/out":/opt/out
 WORKSPACE=-w /opt/adtools
+ARCH=ppc-amigaos
 
 .PHONY: build buildnc build-exp shell push logs clean test release
 
@@ -36,7 +37,7 @@ buildnc:
 build-deps:
 	docker buildx build --no-cache -f ./Dockerfile.deps \
 		--progress plain \
-		-t $(REPO):deps .
+		-t $(REPO):$(ARCH)-deps .
 
 shell:
 	docker run -it --rm --name $(NAME) $(VOLUMES) $(WORKSPACE) $(REPO):$(TAG) /bin/bash

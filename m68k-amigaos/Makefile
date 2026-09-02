@@ -9,13 +9,14 @@ TAG?=$(OS)-gcc$(GCC)-base-$(REL)
 NAME=$(TAG)
 VOLUMES?=-v "${PWD}/out":/opt/out
 WORKSPACE=-w /opt/amiga-gcc
+ARCH=m68k-amigaos
 
 .PHONY: build buildnc build-exp shell push logs clean test release
 
 default: help
 
 help:
-	@echo "This makefile helps on building cross-compiling gcc for AmigaOS 4 PPC"
+	@echo "This makefile helps on building cross-compiling gcc for m68k AmigaOS"
 	@echo "The available parameters can be seen below:"
 	@echo ""
 	@echo "build            - Build the Docker image"
@@ -36,7 +37,7 @@ buildnc:
 build-deps:
 	docker buildx build --no-cache -f ./Dockerfile.deps \
 		--progress plain \
-		-t $(REPO):m68k-amigaos-deps .
+		-t $(REPO):$(ARCH)-deps .
 
 shell:
 	docker run -it --rm --name $(NAME) $(VOLUMES) $(WORKSPACE) $(REPO):$(TAG) /bin/bash

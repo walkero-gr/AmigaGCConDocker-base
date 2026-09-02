@@ -15,7 +15,7 @@ ARCH=ppc-morphos
 default: help
 
 help:
-	@echo "This makefile helps on building cross-compiling gcc for AmigaOS 4 PPC"
+	@echo "This makefile helps on building cross-compiling gcc for MorphOS PPC"
 	@echo "The available parameters can be seen below:"
 	@echo ""
 	@echo "build            - Build the Docker image"
