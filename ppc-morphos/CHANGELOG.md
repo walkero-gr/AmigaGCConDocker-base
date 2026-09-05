@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [mos-1.0.0] - future
+## [mos-1.0.0] - 2026-09-05
 
 First release of this base image
 
