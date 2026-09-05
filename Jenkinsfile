@@ -68,6 +68,7 @@ pipeline {
 				stage('create-manifests') {
 					stages {
 						stage('create-and-push') {
+							agent { label "agent-amd64" }
 							steps {
 								script {
 									createAndPushManifests('os4',['13', '11', '8', '6'])
@@ -141,6 +142,7 @@ pipeline {
 				stage('create-manifests') {
 					stages {
 						stage('create-and-push') {
+							agent { label "agent-amd64" }
 							steps {
 								script {
 									createAndPushManifests('mos',['15', '11', '9'])
@@ -214,6 +216,7 @@ pipeline {
 				stage('create-manifests') {
 					stages {
 						stage('create-and-push') {
+							agent { label "agent-amd64" }
 							steps {
 								script {
 									createAndPushManifests('m68k', ['6'])
@@ -229,7 +232,7 @@ pipeline {
 
 def buildAndPush_ppc(system, gccVer, arch) {
 	def imageTagBase = "${env.DOCKERHUB_REPO}:${system}-gcc${gccVer}-base"
-	def imageTagVersioned = "${imageTagBase}-${env.TAG_NAME}-${arch}"
+	def imageTagVersioned = "${imageTagBase}-${env.TAG_VERSION}-${arch}"
 	def imageTagLatest = "${imageTagBase}-${arch}"
 	def folder = system == 'os4' ? 'ppc-amigaos' : 'ppc-morphos'
 
@@ -263,7 +266,7 @@ def buildAndPush_ppc(system, gccVer, arch) {
 def createAndPushManifests(system, gccVersions) {
 	gccVersions.each { gccVer ->
 		def imageTagBase = "${env.DOCKERHUB_REPO}:${system}-gcc${gccVer}-base"
-		def imageTagVersioned = "${imageTagBase}-${env.TAG_NAME}"
+		def imageTagVersioned = "${imageTagBase}-${env.TAG_VERSION}"
 		def imageTagLatest = imageTagBase
 
 		sh """
@@ -283,7 +286,7 @@ def createAndPushManifests(system, gccVersions) {
 		sh 'echo \$DOCKERHUB_CREDS_PSW | docker login -u \$DOCKERHUB_CREDS_USR --password-stdin'
 		gccVersions.each { gccVer ->
 			def imageTagBase = "${env.DOCKERHUB_REPO}:${system}-gcc${gccVer}-base"
-			def imageTagVersioned = "${imageTagBase}-${env.TAG_NAME}"
+			def imageTagVersioned = "${imageTagBase}-${env.TAG_VERSION}"
 			def imageTagLatest = imageTagBase
 
 			retry(3) {
