@@ -1,7 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [1.9.0] - 2026-10-09
+
+### Added
+
+- Added gcc15
 
 ### Changed
 
@@ -10,26 +14,32 @@ All notable changes to this project will be documented in this file.
 ## [1.8.0] - 2026-07-03
 
 ### Updated
+
 - Updated the official AmigaOS 4.1 FE SDK with v54.25
 
 ### Changed
+
 - Added a separated dependencies docker image that will help to speed up builds. This is not shared in docker hub, but it is required to be available before buildeing the base images
 
 ### Fixed
+
 - gcc 6 cross-sompiler fails to build (#50)
 - setenv replacement patch doesn't clean up variables (#30)
 
 ## [1.7.0] - 2026-06-10
 
 ### Added
+
 - Added gcc13
 
 ### Changed
+
 - Added support for C#
 
 ## [1.6.0] - 2025-08-16
 
 ### Updated
+
 - Updated clib4 to v2.0.0
 - Updated gcc11 to v11.5.0
 - Updated binutils to v2.40
@@ -37,46 +47,54 @@ All notable changes to this project will be documented in this file.
 ## [1.5.0] - 2025-05-07
 
 ### Changed
+
 - Updated clib4 to v1.6.0
 
 ## [1.4.0] - 2024-12-16
 
 ### Changed
+
 - There was a bug in the previous releases, and the base image of GCC 6 and 8 had v11. This release fixes that issue.
 
 ## [1.3.0] - 2024-11-26
 
 ### Changed
+
 - Updated clib4 to v1.4.0
 
 ## [1.2.0] - 2024-11-25
 
 ### Changed
+
 - Now the build is using Ubuntu 24.04 LTS
 - texinfo 7.0 is compiled and installed manually, because of incompatibilites with latest version
 
 ## [1.1.1] - 2024-07-27
 
 ### Added
+
 - No changes with this release, but new base images for gcc 6 and 8 are created.
 
 ## [1.1.0] - 2024-07-10
 
 ### Added
+
 - Added the manifest for the latest image on the pipeline
 
 ### Changed
+
 - Now gcc 11 is used to compile the cross-compiler
 
 ### Fixed
+
 - Fixed the "GLIBC_2.38 not found" error
 
 ## [1.0.0] - 2024-06-04
 
 ### Changed
+
 - Splitted the base images repository from the [AmigaGCCOnDocker](https://github.com/walkero-gr/AmigaGCConDocker)
 - Added version on every release
-
 
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

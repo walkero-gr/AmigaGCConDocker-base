@@ -19,7 +19,7 @@ NAME=$(TAG)
 ##@ Build dev environment
 
 .PHONY: build
-build: ## Build the main dev environment image
+build: ## Build the main dev environment image. Use GCC= and the version to be compiled
 	docker buildx build -f ./Dockerfile \
 		--progress plain \
 		-t $(REPO):$(TAG) \
