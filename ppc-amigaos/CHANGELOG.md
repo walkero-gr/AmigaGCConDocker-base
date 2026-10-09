@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Enabled sjlj-exceptions again to the compilers, because otherwise C++ exceptions where failing, especially with newlib. Non-sjlj-exceptions are much faster when they are dealed by the c-library, and newlib doesn't support it. Currently only clib4 knows how to deal with them. There is an investigation done at https://github.com/AmigaLabs/adtools/issues/42
+- Enabled sjlj-exceptions again to the compilers because otherwise C++ exceptions were failing, especially with newlib. Non-sjlj-exceptions are much faster when they are dealt by the c-library, and newlib doesn't support it. Currently, only clib4 knows how to deal with them. There is an investigation done at https://github.com/AmigaLabs/adtools/issues/42
 
 ## [1.8.0] - 2026-07-03
 
