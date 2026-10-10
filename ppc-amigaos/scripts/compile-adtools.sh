@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
 cd /opt/adtools
+mkdir ./logs
 
 BINUTILS=2.40
 if [ "$GCC_VER" = "6" ]; then
@@ -20,7 +21,7 @@ git submodule init && \
 	gild/bin/gild checkout binutils $BINUTILS && \
 	gild/bin/gild checkout gcc $GCC_VER
 
-# \cp /opt/misc/native-build/makefile /opt/adtools/native-build/makefile
+\cp /opt/misc/native-build/makefile /opt/adtools/native-build/makefile
 # \cp /opt/misc/texi2pod.pl /opt/adtools/binutils/repo/etc/
 
 # Temporary patches that need to be removed
