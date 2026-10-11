@@ -5,7 +5,38 @@ pipeline {
 		DOCKERHUB_REPO="walkero/amigagccondocker"
 	}
 	stages {
-		stage('ppc-amigaos') {
+		stage('ppc-amigaos-dependencies') {
+			when {
+				allOf {
+					buildingTag()
+					tag pattern: "os4-.*", comparator: "REGEXP"
+				}
+			}
+			matrix {
+				axes {
+					axis {
+						name 'ARCH'
+						values 'amd64', 'arm64'
+					}
+				}
+				agent { label "agent-${ARCH}" }
+				stages {
+					stage('build') {
+						steps {
+							sh """
+								cd ppc-amigaos
+								docker buildx build \
+									--no-cache \
+									--provenance=false \
+									-t ${DOCKERHUB_REPO}:ppc-amigaos-deps \
+									-f Dockerfile.deps .
+							"""
+						}
+					}
+				}
+			}
+		}
+		stage('ppc-amigaos-gcc15') {
 			when {
 				allOf {
 					buildingTag()
@@ -16,31 +47,6 @@ pipeline {
 				TAG_VERSION = "${TAG_NAME.replace('os4-', '')}"
 			}
 			stages {
-				stage('build-dependencies-image') {
-					matrix {
-						axes {
-							axis {
-								name 'ARCH'
-								values 'amd64', 'arm64'
-							}
-						}
-						agent { label "agent-${ARCH}" }
-						stages {
-							stage('build') {
-								steps {
-									sh """
-										cd ppc-amigaos
-										docker buildx build \
-											--no-cache \
-											--provenance=false \
-											-t ${DOCKERHUB_REPO}:ppc-amigaos-deps \
-											-f Dockerfile.deps .
-									"""
-								}
-							}
-						}
-					}
-				}
 				stage('build-images') {
 					matrix {
 						axes {
@@ -48,17 +54,13 @@ pipeline {
 								name 'ARCH'
 								values 'amd64', 'arm64'
 							}
-							axis {
-								name 'GCC'
-								values '15', '13', '11', '8', '6'
-							}
 						}
 						agent { label "agent-${ARCH}" }
 						stages {
 							stage('build-and-push') {
 								steps {
 									script {
-										buildAndPush_ppc('os4', GCC, ARCH)
+										buildAndPush_ppc('os4', '15', ARCH)
 									}
 								}
 							}
@@ -71,7 +73,187 @@ pipeline {
 							agent { label "agent-amd64" }
 							steps {
 								script {
-									createAndPushManifests('os4',['15', '13', '11', '8', '6'])
+									createAndPushManifests('os4',['15'])
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		stage('ppc-amigaos-gcc13') {
+			when {
+				allOf {
+					buildingTag()
+					tag pattern: "os4-.*", comparator: "REGEXP"
+				}
+			}
+			environment {
+				TAG_VERSION = "${TAG_NAME.replace('os4-', '')}"
+			}
+			stages {
+				stage('build-images') {
+					matrix {
+						axes {
+							axis {
+								name 'ARCH'
+								values 'amd64', 'arm64'
+							}
+						}
+						agent { label "agent-${ARCH}" }
+						stages {
+							stage('build-and-push') {
+								steps {
+									script {
+										buildAndPush_ppc('os4', '13', ARCH)
+									}
+								}
+							}
+						}
+					}
+				}
+				stage('create-manifests') {
+					stages {
+						stage('create-and-push') {
+							agent { label "agent-amd64" }
+							steps {
+								script {
+									createAndPushManifests('os4',['13'])
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		stage('ppc-amigaos-gcc11') {
+			when {
+				allOf {
+					buildingTag()
+					tag pattern: "os4-.*", comparator: "REGEXP"
+				}
+			}
+			environment {
+				TAG_VERSION = "${TAG_NAME.replace('os4-', '')}"
+			}
+			stages {
+				stage('build-images') {
+					matrix {
+						axes {
+							axis {
+								name 'ARCH'
+								values 'amd64', 'arm64'
+							}
+						}
+						agent { label "agent-${ARCH}" }
+						stages {
+							stage('build-and-push') {
+								steps {
+									script {
+										buildAndPush_ppc('os4', '11', ARCH)
+									}
+								}
+							}
+						}
+					}
+				}
+				stage('create-manifests') {
+					stages {
+						stage('create-and-push') {
+							agent { label "agent-amd64" }
+							steps {
+								script {
+									createAndPushManifests('os4',['11'])
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		stage('ppc-amigaos-gcc8') {
+			when {
+				allOf {
+					buildingTag()
+					tag pattern: "os4-.*", comparator: "REGEXP"
+				}
+			}
+			environment {
+				TAG_VERSION = "${TAG_NAME.replace('os4-', '')}"
+			}
+			stages {
+				stage('build-images') {
+					matrix {
+						axes {
+							axis {
+								name 'ARCH'
+								values 'amd64', 'arm64'
+							}
+						}
+						agent { label "agent-${ARCH}" }
+						stages {
+							stage('build-and-push') {
+								steps {
+									script {
+										buildAndPush_ppc('os4', '8', ARCH)
+									}
+								}
+							}
+						}
+					}
+				}
+				stage('create-manifests') {
+					stages {
+						stage('create-and-push') {
+							agent { label "agent-amd64" }
+							steps {
+								script {
+									createAndPushManifests('os4',['8'])
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		stage('ppc-amigaos-gcc6') {
+			when {
+				allOf {
+					buildingTag()
+					tag pattern: "os4-.*", comparator: "REGEXP"
+				}
+			}
+			environment {
+				TAG_VERSION = "${TAG_NAME.replace('os4-', '')}"
+			}
+			stages {
+				stage('build-images') {
+					matrix {
+						axes {
+							axis {
+								name 'ARCH'
+								values 'amd64', 'arm64'
+							}
+						}
+						agent { label "agent-${ARCH}" }
+						stages {
+							stage('build-and-push') {
+								steps {
+									script {
+										buildAndPush_ppc('os4', '6', ARCH)
+									}
+								}
+							}
+						}
+					}
+				}
+				stage('create-manifests') {
+					stages {
+						stage('create-and-push') {
+							agent { label "agent-amd64" }
+							steps {
+								script {
+									createAndPushManifests('os4',['6'])
 								}
 							}
 						}
@@ -246,6 +428,7 @@ def buildAndPush_ppc(system, gccVer, arch) {
 			cd ${folder}
 			docker buildx build \
 				--provenance=false \
+				--cache-from=walkero/amigagccondocker:${imageTagVersioned} \
 				--build-arg GCC_VER=${gccVer} \
 				-t ${imageTagVersioned} \
 				-t ${imageTagLatest} \
