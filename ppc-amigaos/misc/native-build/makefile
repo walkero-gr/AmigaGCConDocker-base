@@ -37,6 +37,7 @@ SDK_LOC?=
 
 ROOT_DIR=$(realpath .)
 VERBOSE=@
+VERBOSE_LOGS=2>&1
 
 CCRED=\033[31m
 CCGREEN=\033[32m
@@ -114,7 +115,7 @@ DESTDIR?=
 
 SPE_FLAG=
 ifeq ($(GCC_MAJOR_VERSION),6)
-SPE_FLAG=SPE=yes
+SPE_FLAG=SPE=yes -j 1
 endif
 
 STRIPFLAGS=--strip-all --strip-unneeded-rel-relocs -R.comment
@@ -192,7 +193,7 @@ binutils-cross-build-done-$(BINUTILS_VERSION):
 		SRC_DIR=$(BINUTILS_SRC_DIR) \
 		PREFIX=$(CROSS_PREFIX) \
 		VERSION=$(BINUTILS_VERSION) \
-		CROSS_BUILD_DIR=$(ROOT_DIR)/binutils-cross-build-$(BINUTILS_VERSION) > $(ROOT_DIR)/../logs/$@.log 2>&1
+		CROSS_BUILD_DIR=$(ROOT_DIR)/binutils-cross-build-$(BINUTILS_VERSION) > $(ROOT_DIR)/../logs/$@.log $(VERBOSE_LOGS)
 	$(VERBOSE)touch $@
 
 .PHONY: binutils-build
@@ -203,7 +204,7 @@ binutils-build: binutils-cross-build-done-$(BINUTILS_VERSION)
 #
 binutils-cross-done-$(BINUTILS_VERSION): binutils-cross-build-done-$(BINUTILS_VERSION)
 	$(VERBOSE)echo "${CCPINK}${CCBOLD}\n---> Install binutils cross $(BINUTILS_VERSION) ${CCEND}";
-	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/binutils-cross-build-$(BINUTILS_VERSION) install DESTDIR=$(DESTDIR) > $(ROOT_DIR)/../logs/$@.log 2>&1
+	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/binutils-cross-build-$(BINUTILS_VERSION) install DESTDIR=$(DESTDIR) > $(ROOT_DIR)/../logs/$@.log $(VERBOSE_LOGS)
 	$(VERBOSE)touch $@
 
 .PHONY: binutils-install
@@ -275,8 +276,8 @@ xgcc-done-$(GCC_VERSION): includes-done binutils-cross-done-$(BINUTILS_VERSION)
 		SRC_DIR=$(GCC_SRC_DIR) \
 		PREFIX=$(CROSS_PREFIX) \
 		CROSS_BUILD_DIR=$(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) \
-		VERSION=$(GCC_VERSION) > $(ROOT_DIR)/../logs/$@_configure.log 2>&1
-	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) all-gcc > $(ROOT_DIR)/../logs/$@_build.log 2>&1
+		VERSION=$(GCC_VERSION) > $(ROOT_DIR)/../logs/$@_configure.log $(VERBOSE_LOGS)
+	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) all-gcc > $(ROOT_DIR)/../logs/$@_build.log $(VERBOSE_LOGS)
 	$(VERBOSE)touch $@
 
 #
@@ -293,11 +294,11 @@ clib4-cross-done-$(GCC_VERSION): $(CLIB_CROSS_DONE_DEPENDENCY) includes-done
 		STRIP=$(STRIP) \
 		$(SPE_FLAG) \
 		INSTALL_PREFIX=$(CROSS_PREFIX)/ppc-amigaos/SDK/clib4 \
-		SDK_INCLUDE=$(CROSS_PREFIX)/ppc-amigaos/SDK/include > $(ROOT_DIR)/../logs/$@_build.log 2>&1
+		SDK_INCLUDE=$(CROSS_PREFIX)/ppc-amigaos/SDK/include > $(ROOT_DIR)/../logs/$@_build.log $(VERBOSE_LOGS)
 # Copy clib libs and includes
 	$(VERBOSE)$(MAKE) -C $(CLIB4_DIR) -f GNUmakefile.os4 install \
 		$(SPE_FLAG) \
-		INSTALL_PREFIX=$(CROSS_PREFIX)/ppc-amigaos/SDK/clib4 > $(ROOT_DIR)/../logs/$@_install.log 2>&1
+		INSTALL_PREFIX=$(CROSS_PREFIX)/ppc-amigaos/SDK/clib4 > $(ROOT_DIR)/../logs/$@_install.log $(VERBOSE_LOGS)
 	$(VERBOSE)cp $(CLIB4_DIR)/LICENSE* $(CROSS_PREFIX)/ppc-amigaos/SDK/clib4
 	$(VERBOSE)touch $@
 endif
@@ -308,7 +309,7 @@ clib2-cross-done-$(GCC_VERSION): $(CLIB_CROSS_DONE_DEPENDENCY)
 	$(VERBOSE)$(MAKE) -C $(CLIB2_DIR) -f GNUmakefile.os4 \
 		CC="$(XGCC_CC) -Wno-error=int-conversion -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration" \
 		AR="$(XAR)" \
-		RANLIB="$(XRANLIB)" > $(ROOT_DIR)/../logs/$@_build.log 2>&1
+		RANLIB="$(XRANLIB)" > $(ROOT_DIR)/../logs/$@_build.log $(VERBOSE_LOGS)
 # Copy clib libs and includes
 	$(VERBOSE)rm -Rf $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/lib $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/include
 	$(VERBOSE)mkdir -p $(CROSS_PREFIX)/ppc-amigaos/SDK/clib2/lib
@@ -328,8 +329,8 @@ endif
 gcc-cross-done-$(GCC_VERSION): $(GCC_CROSS_DONE_DEPENDENCY)
 	$(VERBOSE)echo "${CCPINK}${CCBOLD}\n---> Done building GCC cross compiler ${CCEND}";
 # Compile remaining
-	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) > $(ROOT_DIR)/../logs/$@_build.log 2>&1
-	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) install > $(ROOT_DIR)/../logs/$@_install.log 2>&1
+	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) > $(ROOT_DIR)/../logs/$@_build.log $(VERBOSE_LOGS)
+	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) install > $(ROOT_DIR)/../logs/$@_install.log $(VERBOSE_LOGS)
 	$(VERBOSE)touch $@
 
 .PHONY: gcc-cross
@@ -365,13 +366,13 @@ libraries-done: $(NATIVE_LIBRARY_DEPENDENCIES)
 	$(VERBOSE)cd downloads && tar -xzf $(notdir $(MPC_ARCHIVE))
 	$(VERBOSE)cd $(basename $(basename downloads/$(notdir $(GMP_ARCHIVE)))) && \
 		PATH="$(CROSS_PREFIX)/bin:$(PATH)" CFLAGS="-O2 -std=gnu89" ./configure --host=ppc-amigaos --prefix=$(CROSS_PREFIX) && \
-		PATH="$(CROSS_PREFIX)/bin:$(PATH)" make install > $(ROOT_DIR)/../logs/$@_gmp_build.log 2>&1
+		PATH="$(CROSS_PREFIX)/bin:$(PATH)" make install > $(ROOT_DIR)/../logs/$@_gmp_build.log $(VERBOSE_LOGS)
 	$(VERBOSE)cd $(basename $(basename downloads/$(notdir $(MPFR_ARCHIVE)))) && \
 		PATH="$(CROSS_PREFIX)/bin:$(PATH)" ./configure --host=ppc-amigaos --prefix=$(CROSS_PREFIX) -with-gmp=$(CROSS_PREFIX) && \
-		PATH="$(CROSS_PREFIX)/bin:$(PATH)" make install > $(ROOT_DIR)/../logs/$@_mpfr_build.log 2>&1
+		PATH="$(CROSS_PREFIX)/bin:$(PATH)" make install > $(ROOT_DIR)/../logs/$@_mpfr_build.log $(VERBOSE_LOGS)
 	$(VERBOSE)cd $(basename $(basename downloads/$(notdir $(MPC_ARCHIVE)))) && \
 		PATH="$(CROSS_PREFIX)/bin:$(PATH)" ./configure --host=ppc-amigaos --prefix=$(CROSS_PREFIX) --with-gmp=$(CROSS_PREFIX) --with-mpfr=$(CROSS_PREFIX) && \
-		PATH="$(CROSS_PREFIX)/bin:$(PATH)" make install > $(ROOT_DIR)/../logs/$@_mpc_build.log 2>&1
+		PATH="$(CROSS_PREFIX)/bin:$(PATH)" make install > $(ROOT_DIR)/../logs/$@_mpc_build.log $(VERBOSE_LOGS)
 	$(VERBOSE)touch $@
 
 #
@@ -384,7 +385,7 @@ binutils-native-done-$(BINUTILS_VERSION): libraries-done
 		SRC_DIR=$(BINUTILS_SRC_DIR) \
 		PREFIX=/gcc \
 		VERSION=$(BINUTILS_VERSION) \
-		NATIVE_BUILD_DIR=$(ROOT_DIR)/binutils-native-build-$(BINUTILS_VERSION) > $(ROOT_DIR)/../logs/$@.log 2>&1
+		NATIVE_BUILD_DIR=$(ROOT_DIR)/binutils-native-build-$(BINUTILS_VERSION) > $(ROOT_DIR)/../logs/$@.log $(VERBOSE_LOGS)
 	$(VERBOSE)touch $@
 
 #
@@ -400,7 +401,7 @@ gcc-native-done-$(GCC_VERSION): binutils-native-done-$(BINUTILS_VERSION)
 		NATIVE_BUILD_DIR=$(ROOT_DIR)/gcc-native-build-$(GCC_VERSION) \
 		VERSION=$(GCC_VERSION) \
 		LIB_PATH=$(CROSS_PREFIX) \
-		NATIVE_SYS_ROOT=$(ROOT_DIR)/root-native > $(ROOT_DIR)/../logs/$@.log 2>&1
+		NATIVE_SYS_ROOT=$(ROOT_DIR)/root-native > $(ROOT_DIR)/../logs/$@.log $(VERBOSE_LOGS)
 	$(VERBOSE)touch $@
 
 ifeq ($(CROSS_IS_PRESENT),1)
@@ -421,7 +422,7 @@ endif
 		CPPFLAGS="-mcrt=clib2" \
 		LDFLAGS="-mcrt=clib2" \
 		LIBS="-lunix -lnet"
-	$(VERBOSE)PATH="$(CROSS_PREFIX)/bin:$(PATH)" $(MAKE) -C coreutils-native-build > $(ROOT_DIR)/../logs/$@.log 2>&1
+	$(VERBOSE)PATH="$(CROSS_PREFIX)/bin:$(PATH)" $(MAKE) -C coreutils-native-build > $(ROOT_DIR)/../logs/$@.log $(VERBOSE_LOGS)
 	$(VERBOSE)touch $@
 
 
