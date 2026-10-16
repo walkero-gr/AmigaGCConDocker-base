@@ -26,4 +26,4 @@ git submodule init && \
 
 # Compile gcc
 echo "-------- START GCC COMPILATION"
-make -C native-build gcc-cross CROSS_PREFIX=/opt/ppc-amigaos VERBOSE_LOGS= BINUTILS_VERSION=$BINUTILS -j$(nproc --ignore=1)
+make -C native-build gcc-cross CROSS_PREFIX=/opt/ppc-amigaos BINUTILS_VERSION=$BINUTILS -j$(nproc --ignore=1)

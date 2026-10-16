@@ -7,7 +7,7 @@ ARCH=ppc-amigaos
 GCC?=11
 
 # Release version
-REL?=1.9.0
+REL?=1.9.1
 
 REPO=walkero/amigagccondocker
 TAG=os4-gcc$(GCC)-base-$(REL)
@@ -50,3 +50,7 @@ build-deps: ## Build the dependencies image
 .PHONY: test
 test: ## Test the Docker image with snyk
 	snyk test --docker $(REPO):$(TAG) --file=Dockerfile
+
+.PHONY: push
+push: ## Push the Docker image to the repository
+	docker push $(REPO):$(TAG)

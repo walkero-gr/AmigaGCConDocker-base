@@ -327,7 +327,7 @@ ifneq ($(CLIB4_SUPPORT),)
 GCC_CROSS_DONE_DEPENDENCY+=clib4-cross-done-$(GCC_VERSION)
 endif
 gcc-cross-done-$(GCC_VERSION): $(GCC_CROSS_DONE_DEPENDENCY)
-	$(VERBOSE)echo "${CCPINK}${CCBOLD}\n---> Done building GCC cross compiler ${CCEND}";
+	$(VERBOSE)echo "${CCPINK}${CCBOLD}\n---> Building GCC cross compiler ${CCEND}";
 # Compile remaining
 	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) > $(ROOT_DIR)/../logs/$@_build.log $(VERBOSE_LOGS)
 	$(VERBOSE)$(MAKE) -C $(ROOT_DIR)/gcc-cross-build-$(GCC_VERSION) install > $(ROOT_DIR)/../logs/$@_install.log $(VERBOSE_LOGS)
