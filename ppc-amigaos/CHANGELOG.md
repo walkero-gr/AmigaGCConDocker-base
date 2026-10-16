@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.9.1] - 2026-10-16
+
+### Fixed
+
+- Fixed gcc15 working with clib4
+
+### Updated
+
+- Updated clib4 from the latest development that contains fixes for exceptions
+
 ## [1.9.0] - 2026-10-09
 
 ### Added
